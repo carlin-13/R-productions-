@@ -214,6 +214,57 @@ data |>
   ggplot(aes(x,y)) + geom_point(size=5, col="black", fill="red", shape=21) + theme_bw() + geom_smooth(method = "lm", alpha=.2) + labs(x = "Escolaridade", y= "Renda", title = "Representação de uma hipótese de trabalho")
 ```
 
+</details>
+<details> 
+<summary>📉 10. Identificação de Tipos de Distribuição (fitdistrplus)</summary>
+
+```r
+if(!require("pacman")) install.packages("pacman")
+library(pacman)
+pacman::p_load(fitdistrplus)
+
+set.seed(123)
+n <- 1000
+
+# Geração de diversas distribuições para teste
+x1 <- rnorm(n,mean = 10,sd=2)
+x2 <- runif(n,min = 0,max = 1)
+x3 <- rexp(n,rate = 0.5)
+
+descdist(x1, discrete = FALSE) # Normal
+descdist(x2, discrete = FALSE) # Uniforme
+descdist(x3, discrete = FALSE) # Exponencial
 ```
+</details>
+<details>  
+<summary> 💰 11. Desigualdade: Cálculo do Coeficiente de Gini e Curva de Lorenz</summary>
+
+```r
+if(!require("pacman")) install.packages("pacman")
+library(pacman)
+pacman::p_load(dplyr, ggplot2, ineq, scales, tibble)
+
+set.seed(123)
+n <- 1000
+renda <- rlnorm(n, meanlog = 8, sdlog=0.8)
+dados <- tibble(id = 1:n, renda=renda)  
+
+# Cálculo de Gini (ineq)
+gini <- ineq::Gini(dados$renda)
+
+# Curva de Lorenz
+lorenz <- ineq::Lc(dados$renda)
+lorenz_df <- data.frame(p = lorenz$p, L = lorenz$L)
+
+ggplot(lorenz_df, aes(x=p, y=L)) + geom_line(size=1.2) + geom_abline(linetype="dashed") + theme_minimal() 
+```
+
+
+
+
+
+
+
+
 
 
