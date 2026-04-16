@@ -264,6 +264,7 @@ ggplot(lorenz_df, aes(x=p, y=L)) + geom_line(size=1.2) + geom_abline(linetype="d
 </details> 
 <details>
 <summary>➗ 12. Gráfico Teórico: Equação de Heckman (Capital Humano)</summary>
+```r
 library(ggplot2)
 
 set.seed(123)
@@ -330,6 +331,7 @@ df$distancia_para_recife_kms <- distGeo(
   recife_cords
 ) / 1000
 ```
+
 </details>
 
 <details>
