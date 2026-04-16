@@ -44,6 +44,7 @@ wordcloud2(df, size= 0.3, shape= "star", rotateRatio = .5, ellipticity = .10, co
 <details>
 <summary>🎬 2. Análise Exploratória: Como escolher bons filmes? (MUBI)</summary>
 
+```r
 if(!require("pacman")) install.packages("pacman")
 library(pacman)
 pacman::p_load(dplyr, ggplot2, forcats)
@@ -64,6 +65,7 @@ movies_agg <- base |>
 <details>
 <summary>🕷️ 3. Web Scraping: Raspagem de Dados de Pacotes do CRAN</summary>
 
+```r
 if(!require("pacman")) install.packages("pacman")
 library(pacman)
 pacman::p_load(rvest, lubridate, dplyr, stringr, ggrepel, ggplot2)
@@ -87,11 +89,13 @@ df_tematica <- pacotes_r |> filter(tema == "TRUE") |> arrange(data) |> dplyr::se
 df_tematica |>  
   group_by(ano) |> summarise(n_pacotes=n()) |> mutate(ano=as.numeric(ano)) |>  
   ggplot(aes(ano,n_pacotes)) + geom_line(size = 3, col = "blue") + geom_point(size = 25, alpha = .25, col = "blue") + theme_bw()
+
 </details>
 
 <details>
 <summary>👤 4. Identificação de Gênero a partir do Nome (IBGE/genderBR)</summary>
 
+```r
 install.packages("genderBR")
 library(genderBR)
 
