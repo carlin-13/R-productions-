@@ -4,15 +4,11 @@ Aqui dentro contém minhas produções utilizando Rstudio
 
 ## 📚 Laboratório de R: Projetos & Estudos (Datafobia)
 
-Abaixo estão diversos scripts e projetos desenvolvidos em **R**, baseados nos estudos de análise de dados, estatística e jurimetria do canal Datafobia. Clique nas setas para expandir e visualizar o código de cada projeto.
+Abaixo estão os scripts com base nas aulas do canal Datafobia, os quais apresentam desde testes de hipóteses até análises exploratórias usando Lei de Benford.
+<details>
+<summary> 📜 Estudos </summary>
 
-<Estudos/>
-<details>
-<summary></summary>
-```r
-```
-</details>
-<details>
+<details style="margin-left: 20px;">
 <summary>🔎 1. Buscas Bibliográficas e Nuvem de Palavras (SciELO/CAPES)</summary>
 
 ```r
