@@ -295,7 +295,7 @@ pacman::p_load(pdftools, writexl, stringr, DescTools, dplyr, ggplot2, forcats)
 # Scraping de lista oficial em PDF
 pdf_file <- "LISTA-NOMES-outras-ufs.pdf"
 pdf_text_content <- pdf_text(pdf_file)
-```r
+```
 
 </details>
 <details>
@@ -351,7 +351,99 @@ tabs <- pg |> html_elements('table.wikitable') |> html_table(fill = TRUE)
 # Funções blindadas de limpeza construídas no script para extrair, limpar Regex e prever sexo dos presidentes via genderBR.
 ```
 
+</details> 
+<details>
+<summary>🎥 17. Dataviz Interativa: Gráficos Animados com gganimate (Parte 1)</summary>
+```r
+if(!require("pacman")) install.packages("pacman")
+library(pacman)
+pacman::p_load(gganimate, tidyr, dplyr, lubridate, gghighlight, ggplot2, ggrepel, ggthemes)
 
+# PARTE 1 - IDEB
+# pivot_longer e animação com transition_reveal(ano)
+
+# PARTE 2 - Casos de Dengue
+# Animado com ease_aes('linear') e transition_reveal(ano)
+
+# PARTE 3 - Tendências Históricas (Golpes de Estado)
+# Uso de predict(lm(...)) animado com a linha de tendência seguindo os pontos.
+# anim_save("animacao.gif")
+```
+
+</details>
+<details>
+<summary>🌐 18. Análise de Redes: Mapeamento de Coautoria (Google Scholar)</summary>
+
+```r
+install.packages("scholar")
+library(scholar)
+library(ggplot2)
+
+data_scholar <- get_coauthors('5sz_jBoAAAAJ6hl')
+
+plot_coauthors(data_scholar) + 
+  labs(title = paste("Rede de cobertura de", data_scholar$author),
+       subtitle = paste("Atualizado em", format(Sys.Date(), "%d de %B de %Y"))) +
+  theme_void(base_size = 20)
+```
+</details>
+
+<details>
+<summary>🧪 19. Estatística Paramétrica: Testando Pressupostos de Regressão Linear</summary>
+
+```r
+if(!require("pacman")) install.packages("pacman")
+library(pacman)
+pacman::p_load(performance, dplyr, ggplot2, sjPlot)
+
+# Simulação de modelo múltiplo
+modelo1 <- lm(y ~ x1+x2+x3+x4, data = data)
+
+# Testes de Pressupostos via pacote performance
+performance::check_collinearity(modelo1)
+performance::check_normality(modelo1)
+performance::check_outliers(modelo1)
+performance::check_heteroscedasticity(modelo1)
+
+sjPlot::plot_model(modelo1, show.intercept = T, ci.lvl = 0.95) + theme_bw()
+```
+</details>
+
+<details>
+<summary>🌍 20. Mapas de Padrão GloboNews: Índice V-Dem (Democracia Eleitoral)</summary>   
+
+```r
+library(vdemdata)
+library(dplyr)
+library(ggplot2)
+library(countrycode)
+library(rnaturalearth)
+library(ggpubr)
+
+# Função personalizada desenvolvida para extração dos scores de Poliarquia (v2x_polyarchy)
+# Geração e plotagem via ggplot + geom_sf formatada nos padrões de dashboards profissionais (Tema Globonews / Carlos Canto).
+# Uso de ISO3C keys para left_join espacial impecável.
+```
+</details>
+
+<details>
+<summary>🔍 21. Forense Eleitoral e Auditoria: A Lei de Benford</summary>
+```r
+if(!require("pacman")) install.packages("pacman")
+library(pacman)
+pacman::p_load(tidyverse, scales, freqdist, ggplot2, benford.analysis)
+
+# 1. Lei de Benford Tradicional (1º Dígito)
+bfd.teste <- benford(dados$valor, 1)
+plot(bfd.teste)
+
+# 2. Lei de Benford do Segundo Dígito (2BL) em Dados Eleitorais do TSE (Mebane Approach)
+# Validação da integridade dos dados através da distribuição teórica do segundo dígito (Média esperada: 4.187)
+
+# 3. Election Fingerprint Analysis
+# Análise de densidade conjunta 2D via geom_bin_2d() para identificar distorções no Turnout vs. Vote Share.
+```
+</details
 
 
 
