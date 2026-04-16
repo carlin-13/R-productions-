@@ -67,7 +67,7 @@ movies_agg <- base |>
 </details>
 
 <details>
-<summary>🕷️ 3. Web Scraping: Raspagem de Dados de Pacotes do CRAN</summary>
+<summary>🕷️ 3. Web Scrapping: Raspagem de Dados de Pacotes do CRAN</summary>
 
 ```r
 if(!require("pacman")) install.packages("pacman")
@@ -260,6 +260,96 @@ lorenz_df <- data.frame(p = lorenz$p, L = lorenz$L)
 
 ggplot(lorenz_df, aes(x=p, y=L)) + geom_line(size=1.2) + geom_abline(linetype="dashed") + theme_minimal() 
 ```
+
+</details> 
+<details>
+<summary>➗ 12. Gráfico Teórico: Equação de Heckman (Capital Humano)</summary>
+library(ggplot2)
+
+set.seed(123)
+age <- seq(0,30,by=0.1)
+return_rate <- 0.6 * exp(-0.1*age) # curva exponencial decrescente
+df <- data.frame(age = age, return_rate = return_rate)
+
+df$stage <- cut(df$age, breaks = c(-Inf,5,18,Inf), labels = c("Preschool","School","Post-school"))
+
+ggplot(df, aes(x=age,y=return_rate)) + 
+  geom_ribbon(aes(ymin = 0,ymax = return_rate, fill = stage),alpha = 0.3) + 
+  geom_line(color = "red", size=1.2) +
+  scale_fill_manual(values= c("Preschool"="gold","School"="skyblue","Post-school"="lightgreen")) +
+  theme_minimal()
+```
+</details>
+
+<details>
+<summary>⚖️ 13. Extração de PDFs e Jurimetria: Dados do 8 de Janeiro</summary>
+```r
+if(!require("pacman")) install.packages("pacman")
+library(pacman)
+pacman::p_load(pdftools, writexl, stringr, DescTools, dplyr, ggplot2, forcats)
+
+# Scraping de lista oficial em PDF
+pdf_file <- "LISTA-NOMES-outras-ufs.pdf"
+pdf_text_content <- pdf_text(pdf_file)
+
+# (Lógica de regex extraída no script principal para formatar nomes, datas e UF)
+# Agrupamento e identificação de signos via pacote DescTools
+```
+</details>
+
+<details>
+<summary>🗺️ 14. Geoprocessamento: Mapas Estaduais e Variação do Gini (geobr)</summary>
+```r
+if(!require("pacman")) install.packages("pacman")
+library(pacman)
+pacman::p_load(readxl, janitor, dplyr, stringr, sf, geobr, ggplot2)
+
+# Carrega shapefile do Brasil
+ufs <- read_state(year = 2020) |> clean_names() |> select(code_state,name_state,geom)
+
+# Junção com dados processados de variação do Gini
+# ggplot(gini_mapa) +
+#   geom_sf(aes(fill= variacao), color=NA) +
+#   scale_fill_gradient2(low="blue", mid="green", high="red", midpoint=0, na.value="grey") +
+#   theme_void()
+```
+</details>
+
+<details>
+<summary>📏 15. Distância Geográfica Computacional (geosphere)</summary>
+```r
+if(!require("pacman")) install.packages("pacman")
+library(pacman)
+pacman::p_load(readr, geosphere)
+
+# df <- read_delim("latitude-longitude-cidades.csv", delim = ";")
+recife_cords <- c(longitude = -34.87707, latitude = -8.046658) 
+
+df$distancia_para_recife_kms <- distGeo(
+  matrix(c(df$longitude, df$latitude), ncol=2),
+  recife_cords
+) / 1000
+```
+</details>
+
+<details>
+<summary>🤖 16. Web Scraping Dinâmico: Lista de Presidentes do BCB (Wikipédia)</summary>
+
+```r
+if(!require("pacman")) install.packages("pacman")
+library(pacman)
+pacman::p_load(rvest, tidyr, stringr, lubridate, janitor, dplyr, genderBR)
+
+url <- "[https://pt.wikipedia.org/wiki/Lista_de_presidentes_do_Banco_Central_do_Brasil](https://pt.wikipedia.org/wiki/Lista_de_presidentes_do_Banco_Central_do_Brasil)"
+pg <- read_html(url)
+
+tabs <- pg |> html_elements('table.wikitable') |> html_table(fill = TRUE)
+# Funções blindadas de limpeza construídas no script para extrair, limpar Regex e prever sexo dos presidentes via genderBR.
+```
+
+
+
+
 
 
 
