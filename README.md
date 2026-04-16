@@ -60,6 +60,7 @@ movies_agg <- base |>
 "Planilha" |>  
   filter() |> slice() |> mutate(fct_reorder()) |>
   ggplot() + geom_col() + geom_text() + coord_flip() + theme_bw() + labs()
+```
 
 </details>
 
@@ -90,6 +91,7 @@ df_tematica <- pacotes_r |> filter(tema == "TRUE") |> arrange(data) |> dplyr::se
 df_tematica |>  
   group_by(ano) |> summarise(n_pacotes=n()) |> mutate(ano=as.numeric(ano)) |>  
   ggplot(aes(ano,n_pacotes)) + geom_line(size = 3, col = "blue") + geom_point(size = 25, alpha = .25, col = "blue") + theme_bw()
+```
 
 </details>
 
@@ -106,3 +108,4 @@ idade <- c(18,19,20,30,25)
 bse <- as.data.frame(cbind(nome,idade))
 bse$sexo <- get_gender(bse$nome) # Busca na base do IBGE via probabilidade
 View(bse)
+```
