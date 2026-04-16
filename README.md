@@ -151,7 +151,7 @@ code <- qr_code("link de interesse")
 plot(code)
 generate_svg(code, filename = "pasta de destino/qr.svg")
 ```
-<details/>
+</details>
 <details> 
 <summary> 📊 7. Análise de Outliers: O Quarteto de Anscombe</summary>  
 
