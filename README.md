@@ -149,5 +149,68 @@ library(qrcode)
 code <- qr_code("link de interesse")
 plot(code)
 generate_svg(code, filename = "pasta de destino/qr.svg")
-``` 
+```
+
+<details/>
+<details> 
+<summary> 📊 7. Análise de Outliers: O Quarteto de Anscombe</summary>  
+
+```r
+if(!require("pacman")) install.packages("pacman")
+library(pacman)
+pacman::p_load(fBasics, datasets, ggpubr, ggplot2)  
+
+anscombe <- datasets::anscombe
+
+g1 <- anscombe |> ggplot(aes(x1,y1)) + geom_point(size=5, alpha=.5, col="darkorange") + theme_bw() + geom_smooth(method = "lm",alpha=.1) + stat_cor(method = "pearson",label.x = 3,label.y = 10,size=7)
+g2 <- anscombe |> ggplot(aes(x2,y2)) + geom_point(size=5, alpha=.5, col="darkorange") + theme_bw() + geom_smooth(method = "lm",alpha=.1) + stat_cor(method = "pearson",label.x = 3,label.y = 10,size=7)
+# (Repete para g3 e g4)
+ggarrange(g1,g2,g3,g4)
+# Demonstra que distribuições com o mesmo R podem ter correlações visuais totalmente diferentes.
+```
+</details>
+
+<details>
+<summary>🎸 8. Identificação e Destaque de Outliers em Gráficos (Simulação Iron Maiden)</summary>
+
+```r 
+if(!require("pacman")) install.packages("pacman")
+library(pacman)
+pacman::p_load(ggplot2, ggrepel, dplyr)
+
+set.seed(123)
+y <- rnorm(n=665, mean = 200, sd=5)
+
+# Cria um outlier 6.6 desvios padrões abaixo da média
+Outlier <- mean(y) - 6.6 * sd(y)
+y <- c(y,Outlier)
+df <- data.frame(y)
+df$id <- c(1:666)
+
+df <- df |> mutate(Outlier = ifelse(id %in% c("666"), T, F))
+
+ggplot(df, aes(id,y)) + geom_point() + theme_bw() + 
+  geom_label_repel(data = filter(df, Outlier == T), aes(label = id), size =10) +
+  geom_point(data = . |> filter(id == "666"), size =11, shape = 19, fill = "red", color = "red", alpha = .5)
+```
+
+</details>
+
+<details>
+<summary>📈 9. Representação Gráfica de Hipótese de Trabalho</summary>
+
+```r
+if(!require("pacman")) install.packages("pacman")
+library(pacman)
+pacman::p_load(ggstatsplot, ggplot2, dplyr)
+
+set.seed(123)
+x <- rnorm(100)
+y <- -0.11 * x + rnorm(100, mean = 0, sd= 0.2) 
+
+data <- data.frame(x,y)
+data |>  
+  ggplot(aes(x,y)) + geom_point(size=5, col="black", fill="red", shape=21) + theme_bw() + geom_smooth(method = "lm", alpha=.2) + labs(x = "Escolaridade", y= "Renda", title = "Representação de uma hipótese de trabalho")
+```
+
 
