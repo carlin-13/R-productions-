@@ -38,6 +38,7 @@ palavras <- sort(rowSums(tdm), decreasing = T)
 df <- data.frame(palavra = names(palavras), freq = palavras)
 df$peso <- round(df$freq/sum(df$freq)*100, 2)
 wordcloud2(df, size= 0.3, shape= "star", rotateRatio = .5, ellipticity = .10, color = "pink")
+```
 
 </details>
 
