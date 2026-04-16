@@ -369,7 +369,6 @@ pacman::p_load(gganimate, tidyr, dplyr, lubridate, gghighlight, ggplot2, ggrepel
 # Uso de predict(lm(...)) animado com a linha de tendência seguindo os pontos.
 # anim_save("animacao.gif")
 ```
-
 </details>
 <details>
 <summary>🌐 18. Análise de Redes: Mapeamento de Coautoria (Google Scholar)</summary>
@@ -386,6 +385,7 @@ plot_coauthors(data_scholar) +
        subtitle = paste("Atualizado em", format(Sys.Date(), "%d de %B de %Y"))) +
   theme_void(base_size = 20)
 ```
+
 </details>
 
 <details>
