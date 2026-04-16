@@ -353,7 +353,8 @@ tabs <- pg |> html_elements('table.wikitable') |> html_table(fill = TRUE)
 
 </details> 
 <details>
-<summary>🎥 17. Dataviz Interativa: Gráficos Animados com gganimate (Parte 1)</summary>
+<summary>🎥 17. Dataviz Interativa: Gráficos Animados com gganimate (Parte 1)</summary> 
+  
 ```r
 if(!require("pacman")) install.packages("pacman")
 library(pacman)
@@ -369,6 +370,7 @@ pacman::p_load(gganimate, tidyr, dplyr, lubridate, gghighlight, ggplot2, ggrepel
 # Uso de predict(lm(...)) animado com a linha de tendência seguindo os pontos.
 # anim_save("animacao.gif")
 ```
+
 </details>
 <details>
 <summary>🌐 18. Análise de Redes: Mapeamento de Coautoria (Google Scholar)</summary>
