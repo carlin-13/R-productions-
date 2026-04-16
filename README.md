@@ -6,7 +6,7 @@ Aqui dentro contém minhas produções utilizando Rstudio
 
 Abaixo estão os scripts com base nas aulas do canal Datafobia, os quais apresentam desde testes de hipóteses até análises exploratórias usando Lei de Benford.
 <details>
-<summary> 📜 Estudos </summary>
+<summary><b> 📜 Estudos </b></summary>
 
 <details style="margin-left: 20px;">
 <summary>🔎 1. Buscas Bibliográficas e Nuvem de Palavras (SciELO/CAPES)</summary>
