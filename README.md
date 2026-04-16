@@ -137,6 +137,7 @@ df_agg$perc <- round(df_agg$n_casos/sum(df_agg$n_casos)*100, 1)
 
 df_agg |> mutate(signo = fct_reorder(signo,n_casos)) |> 
   ggplot(aes(signo,perc)) + geom_col(col = "white", fill = "green", alpha =.7) + theme_minimal()
+```
 
 </details>
 <details>
