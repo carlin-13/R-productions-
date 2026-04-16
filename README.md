@@ -169,6 +169,7 @@ g2 <- anscombe |> ggplot(aes(x2,y2)) + geom_point(size=5, alpha=.5, col="darkora
 ggarrange(g1,g2,g3,g4)
 # Demonstra que distribuições com o mesmo R podem ter correlações visuais totalmente diferentes.
 ```
+
 </details>
 
 <details>
@@ -212,6 +213,8 @@ y <- -0.11 * x + rnorm(100, mean = 0, sd= 0.2)
 data <- data.frame(x,y)
 data |>  
   ggplot(aes(x,y)) + geom_point(size=5, col="black", fill="red", shape=21) + theme_bw() + geom_smooth(method = "lm", alpha=.2) + labs(x = "Escolaridade", y= "Renda", title = "Representação de uma hipótese de trabalho")
+```
+
 ```
 
 
