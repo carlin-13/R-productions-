@@ -6,6 +6,9 @@ Aqui dentro contém minhas produções utilizando Rstudio
 
 Abaixo estão diversos scripts e projetos desenvolvidos em **R**, baseados nos estudos de análise de dados, estatística e jurimetria do canal Datafobia. Clique nas setas para expandir e visualizar o código de cada projeto.
 
+<Estudos/>
+
+</details>
 <details>
 <summary>🔎 1. Buscas Bibliográficas e Nuvem de Palavras (SciELO/CAPES)</summary>
 
