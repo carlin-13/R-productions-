@@ -109,3 +109,45 @@ bse <- as.data.frame(cbind(nome,idade))
 bse$sexo <- get_gender(bse$nome) # Busca na base do IBGE via probabilidade
 View(bse)
 ```
+</details>
+
+<details>
+<summary>♈ 5. Manipulação de Datas: Cálculo do Signo do Zodíaco</summary>
+
+```r
+if(!require("pacman")) install.packages("pacman")
+library(pacman)
+pacman::p_load(readxl, DescTools, dplyr, lubridate, ggplot2, forcats, rio)
+
+base_signos <- read_excel("Teste_signos.xlsx") |> mutate(data_nascimento = make_date(Ano,Mês,Dia))
+base_signos$signo <- Zodiac(base_signos$data_nascimento)
+
+base_signos <- base_signos |> 
+  mutate(signo = case_when(
+    signo == "Virgo" ~ "Virgem", signo == "Capricorn" ~"Capricórnio",
+    signo == "Leo" ~"Leão", signo == "Pisces" ~"Peixe",
+    signo == "Aquarius" ~"Aquário", signo == "Cancer" ~ "Câncer",
+    signo == "Libra" ~"Libra", signo == "Scorpio" ~"Escorpião",
+    signo == "Taurus" ~"Touro", signo == "Sagittarius" ~"Sagitário",
+    signo == "Aries" ~"Áries", signo == "Gemini" ~"Gemêos"
+  ))
+
+df_agg <- base_signos |> group_by(signo) |> summarise(n_casos=n())
+df_agg$perc <- round(df_agg$n_casos/sum(df_agg$n_casos)*100, 1)
+
+df_agg |> mutate(signo = fct_reorder(signo,n_casos)) |> 
+  ggplot(aes(signo,perc)) + geom_col(col = "white", fill = "green", alpha =.7) + theme_minimal()
+
+</details>
+<details>
+<summary> 📱 6. Geração de QR Code no R</summary>
+
+```r
+install.packages("qrcode")
+library(qrcode)
+
+code <- qr_code("link de interesse")
+plot(code)
+generate_svg(code, filename = "pasta de destino/qr.svg")
+``` 
+
