@@ -646,7 +646,7 @@ install.packages("qrcode")
 </details>
 
 <details>
-<summary>📈 9. Noçoes de Jurimetria</summary>
+<summary>⚖️9. Noçoes de Jurimetria</summary>
 
 ```r
 
@@ -947,113 +947,60 @@ labs(x= "Idade", y="taxa de retorno",
 </details>
 
 <details>
-<summary>⚖️ 13. Extração de PDFs e Jurimetria: Dados do 8 de Janeiro</summary>
+<summary>📈13. Cálculo de distâncias entre cidades</summary>
   
 ```r
-if(!require("pacman"))  install.packages("pacman")
+if(!require("pacman")) install.packages("pacman")
 library(pacman)
+pacman :: p_load(readr               #lê arquivos e formatos 
+)
+options(scipen = 999)  #evitsa notações cientificas nas estimativas 
 
-#pacotes 
-pacman::p_load(
-  pdftools, #LEITURA DE ARQUIVOS PDF 
-  writexl,   #EXPORTAÇÃO PARA ARQUIVOS .XLSX
-  stringr,  #MANIPULAÇÃO DE STRINGS
-  DescTools, #FUNÇÕES ESTATÍSTICAS E UTILITÁRIAS
-  dpylr,  #MANIPULAÇÃO DE DADOS
-  ggplot2,
-  forcats #MANIPULAÇÃO DE VARIAVEIS FATOR 
+#usa longitude e latitude para calcular as distancias
+
+df <-  read_delim("latitude-longitude-cidades.csv",
+                  delim = ";",
+                  escape_double = FALSE, 
+                  trim_ws = TRUE
 )
 
-#LER CONTEUDO DE PDF DA PF 
-pdf_file <-  "LISTA-NOMES-outras-ufs.pdf"  #Caminho do PDF
-pdf_text_content <-  pdf_text(pdf_file)
+save(df, file = "df.rda")    #para salvar em formato do R 
 
-#Processar o texto de PDF 
-#extração de nomes 
+#ou carregar direto a base em r 
+load("df.rda")
 
-# processamento de dados
-nomes <- c()
-datas_nascimento <- c()
-ufs <- c()
 
-for (page in pdf_text_content) {
-  # Separar o texto por linhas 
-  linhas <- str_split(page, "\n")[[1]]
+#forma de ver 
+names(df)
+
+#agora para calcular as distancas usa o pacote geosphere
+
+p_load(geosphere)
+
+#escolher a cidade 
+recife_cords <-  c(longitude = -34.87707, latitude = -8.046658) #objeto com as informações 
+
+
+#fazer uma df que pega todas as distancias em comparação com a cidade analisada
+
+df$distancia |> distGeo( #distGeo calcula em metros por isso no fim se tem 1000 para os metros virarem kms 
+  matrix(c(df$longitude, df$latitude ), ncol=2),
+  recife_cords
+) /1000
+
+#exibir distancias 
+df$distancia_para_recife_kms
+
+#para outras cidades é só usar o exemplo e colocar outros lugares
+
+
+#tem como fazer isso em mapa
+
+ggplot(df,aes(x=longitude, y=latitude),
+       color = distancia_para_a_cidade) + 
+  scale_color_viridis_c() +
   
-  for (linha in linhas) {
-    # Regex para buscar: [NOME] [DATA dd/mm/aaaa ou dd. mm. aaaa] [UF]
-    # Nota: Ajustei para capturar nomes e datas comuns em listas oficiais
-    match <- str_match(linha, "^\\s*(.*?)\\s+(\\d{2}[./]\\s*\\d{2}[./]\\s*\\d{4})\\s+([A-Z]{2})")
-    
-    if(!is.na(match[1])) {
-      nomes <- c(nomes, match[2])
-      datas_nascimento <- c(datas_nascimento, match[3])
-      ufs <- c(ufs, match[4])
-    }
-  }
-}
-
-#criar data frame
-df <- data.frame(
-  nome = nomes,
-  data_nascimento = datas_nascimento,
-  uf = ufs,
-  stringsAsFactors = FALSE
-)
-
-#tratar dados
-# Removendo espaços extras que às vezes vêm do PDF (ex: "01. 01. 1990")
-df$data_nascimento <- str_replace_all(df$data_nascimento, " ", "")
-df$data_date <- as.Date(df$data_nascimento, format = "%d.%m.%Y") 
-
-# Se o separador for barra (/) em vez de ponto, use:
-# df$data_date <- as.Date(df$data_nascimento, format = "%d/%m/%Y")
-
-df$signo <- Zodiac(df$data_date)
-
-df <- df %>% 
-  mutate(zodiaco = case_when(
-    signo == "Virgo" ~ "Virgem",
-    signo == "Capricorn" ~ "Capricórnio",
-    signo == "Leo" ~ "Leão",
-    signo == "Pisces" ~ "Peixes",
-    signo == "Aquarius" ~ "Aquário",
-    signo == "Cancer" ~ "Câncer",
-    signo == "Libra" ~ "Libra",
-    signo == "Scorpio" ~ "Escorpião",
-    signo == "Taurus" ~ "Touro",
-    signo == "Sagittarius" ~ "Sagitário",
-    signo == "Aries" ~ "Áries",
-    signo == "Gemini" ~ "Gêmeos"
-  ))
-
-#agregando
-df_agg <- df %>%
-  filter(!is.na(zodiaco)) %>% # Remove se houver data errada
-  group_by(zodiaco) %>%
-  summarise(n_casos = n()) %>%
-  ungroup()
-
-# Calcular percentual (como no seu print)
-df_agg$perc <- round((df_agg$n_casos / sum(df_agg$n_casos)) * 100, 2)
-
-# código para plotar 
-df_agg %>%
-  mutate(zodiaco = fct_reorder(zodiaco, n_casos)) %>%
-  ggplot(aes(zodiaco, perc)) +
-  geom_col(col = "black", fill = "darkred", alpha = .7) +
-  coord_flip() +
-  labs(x = "", y = "%", 
-       title = "Signos mais frequentes das pessoas presas durante o 8 de janeiro",
-       subtitle = "Análise baseada em dados públicos",
-       caption = "Fonte: Figueiredo Filho (2026)") +
-  theme_bw() +
-  geom_text(aes(label = perc), size = 6.5, hjust = -0.1, vjust = 0.3) +
-  theme(text = element_text(size = 23))
-
-#exportar para excel
-write_xlsx(df, "signotananam")
-write_xlsx(df_agg,"signoossss")
+  labs() + theme_void()
 ```
 
 </details>
