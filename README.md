@@ -947,60 +947,65 @@ labs(x= "Idade", y="taxa de retorno",
 </details>
 
 <details>
-<summary>📈13. Cálculo de distâncias entre cidades</summary>
+<summary>📈13. Como prever a partir de pacote R a maior probabilidade da cor de alguém de acordo com seu nome </summary>
   
 ```r
-if(!require("pacman")) install.packages("pacman")
-library(pacman)
-pacman :: p_load(readr               #lê arquivos e formatos 
-)
-options(scipen = 999)  #evitsa notações cientificas nas estimativas 
+--------
 
-#usa longitude e latitude para calcular as distancias
+install.packages("rethnicity") #Pacote identifica a raça/cor a partir do nome da pessoa, atraves da distribuição de probabilidade do nome da pessoa seguindo a lógica de registros que são acumulados e pega a probabilidade de estar contido
 
-df <-  read_delim("latitude-longitude-cidades.csv",
-                  delim = ";",
-                  escape_double = FALSE, 
-                  trim_ws = TRUE
-)
+library(rethnicity)
 
-save(df, file = "df.rda")    #para salvar em formato do R 
-
-#ou carregar direto a base em r 
-load("df.rda")
+#Testes de nomes 
 
 
-#forma de ver 
-names(df)
+predict_ethnicity(firstnames = "Mirella", lastnames = "Marchini")
 
-#agora para calcular as distancas usa o pacote geosphere
+predict_ethnicity(firstnames = "Taylor", lastnames = "Swift")
 
-p_load(geosphere)
+predict_ethnicity(firstnames = "João", lastnames = "Aguiar")
 
-#escolher a cidade 
-recife_cords <-  c(longitude = -34.87707, latitude = -8.046658) #objeto com as informações 
+predict_ethnicity(firstnames = "Whindersson", lastnames = "Nunes")
+
+predict_ethnicity(firstnames = "Carlos", lastnames = "Arthur")
+
+predict_ethnicity(firstnames = "Carlos", lastnames = "Carvalho")
+
+predict_ethnicity(firstnames = "Carlos", lastnames = "Canto")
+
+predict_ethnicity(firstnames = "Carlos Arthur", lastnames = "Carvalho Canto ")
+
+predict_ethnicity(firstnames = "Danielle", lastnames = "Oliveira")
+
+predict_ethnicity(firstnames = "Danielle", lastnames = "Carvalho")
+
+predict_ethnicity(firstnames = "Arthur", lastnames = "Cardoso")
+
+predict_ethnicity(firstnames = "Pedro", lastnames = "Gomes")
+
+predict_ethnicity(firstnames = "João", lastnames = "Neto")
+
+predict_ethnicity(firstnames = "Paolo", lastnames = "Storto")
+
+predict_ethnicity(firstnames = "Percival", lastnames = "Canto")
+
+predict_ethnicity(firstnames = "Nathália", lastnames = "Bender")
+
+predict_ethnicity(firstnames = "Josyanne", lastnames = "Soares")
+
+predict_ethnicity(firstnames = "Mirella", lastnames = "Marchini")
+
+predict_ethnicity(firstnames = "Reginaldo", lastnames = "Kawa")
+
+#artigo citado que é bom para usar de repertorio para ver qual seriam mais empregaveis quando se usa um nome mais recorrente de raça diferente 
+#https://www.nber.org/papers/w9873 (LINK DO ARTIGO)
 
 
-#fazer uma df que pega todas as distancias em comparação com a cidade analisada
-
-df$distancia |> distGeo( #distGeo calcula em metros por isso no fim se tem 1000 para os metros virarem kms 
-  matrix(c(df$longitude, df$latitude ), ncol=2),
-  recife_cords
-) /1000
-
-#exibir distancias 
-df$distancia_para_recife_kms
-
-#para outras cidades é só usar o exemplo e colocar outros lugares
 
 
-#tem como fazer isso em mapa
 
-ggplot(df,aes(x=longitude, y=latitude),
-       color = distancia_para_a_cidade) + 
-  scale_color_viridis_c() +
-  
-  labs() + theme_void()
+
+
 ```
 
 </details>
