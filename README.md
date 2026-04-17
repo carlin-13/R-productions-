@@ -12,34 +12,164 @@ Abaixo estão os scripts com base nas aulas do canal Datafobia, os quais apresen
 <summary>🔎 1. Buscas Bibliográficas e Nuvem de Palavras (SciELO/CAPES)</summary>
 
 ```r
+
+
 if(!require("pacman")) install.packages("pacman")
 library(pacman)
-pacman::p_load(stringr, dplyr, writexl, ggplot2, easyScieloPack, ggtext, ggpubr, ggrepel, arrow, purrr, capesR, usethis)
 
-# Busca automatizada no SciELO
-base_scielo <- search_scielo("Supremo Tribunal Federal", n_max = 1000)
+pacman:: p_load(stringr,  #manipulação de strings
+                dplyr,    #manipulação de dados
+                writexl,  #exportar para o excel
+                ggplot2,  #Visualização de dados
+                easyScieloPack, #Busca de artigos no SciELO, ele automatiza, ou seja é um webscrapper
+                ggtext,    #Textos ricos em gráficos
+                ggpubr,   #Publicações de gráficos bonitos
+                ggrepel, #Evita sobreposição de labels
+                arrow,   #Leitura e escrita ed dados em formato Parquet/feather
+                purrr,#Programação funcional (map, walk, etc.)
+                capesR,
+                usethis#ajuda a recuperar as teses de dissertação da capes
+)
+
+##Scielo é um site para achar artigos cientificos, para achar dados sobre questões de aprendizado
+
+## exemplo ##
+#aplico a base scielo a função de procura dentro dessa base a questão mostra o que é para que ele ache todo material que tiver Supremo Tribunal Federal
+base_scielo<-  search_scielo(
+  "Supremo Tribunal Federal",
+  n_max = 1000
+)
+#Vamos buscar pelo termo de interesse 
+#mas limitando à busca para 2000 ele demora mais, essa busca vai demorar menos ou mais devido a quantidade de buscar procuradas
+
+#Visualizar o objeto
+View(base_scielo)
+#lista as variáveis da bases de dados
+names(base_scielo)
+
+#Padronizar título para minusculas e verificar se contém termos sobre STF 
 base_scielo <- base_scielo |>  
   mutate(
-    titulo_min = tolower(title),
-    tema = stringr::str_detect(titulo_min, "supremo tribunal federal|\\bstf\\b|supremo tribunal brasileiro|corte suprema brasileira| corte constitucional brasileira|surpreme federal court")
+    titulo_min = tolower(title),  # útil que eu posso fazer buscas sem ter o caso sensitivo ou seja aquilo de procurar dados maiusculos minusculos ou maiusculos,
+    tema = stringr:: str_detect(
+      titulo_min,
+      #PT + EN + ES + sigla + variações
+      "supremo tribunal federal|\\bstf\\b|supremo tribunal brasileiro|corte suprema brasileira| corte constitucional brasileira|surpreme federal court"
+    )
   )
-df_tematica_scielo <- base_scielo |> filter(tema == "TRUE") |> arrange(year) |> dplyr::select(-tema)
+
+view(base_scielo)
+
+#depois de tudo fazer o filtro 
+#esse data.frame vai ser feita com todos aquelas o qual o tema tem ave com o Supremo Tribunal Federal
+df_tematica_scielo <-  base_scielo |>  
+  filter(tema == "TRUE") |>  
+  arrange(year) |>  
+  dplyr:: select(-tema)
+
+#salvar os resultados filtrados em um novo arquivo
 write.xlsx(df_tematica_scielo, "datafobia1.xlsx")
 
-# Busca na CAPES e Nuvem de Palavras
-capes <- download_capes_data(c(1987:2022))
-df_capes <- map_dfr(capes, read_parquet)
-# ... (Omissão de partes repetitivas para otimização do script) ...
+## Vamos repetir o processo com os dados de CAPES
 
-pacman::p_load(tidyverse, wordcloud2, tm)
-scielo_corpus <- VCorpus(VectorSource((df_tematica_scielo)))
-scielo_corpus <- scielo_corpus |> tm_map(removeNumbers) |> tm_map(removePunctuation) |> tm_map(content_transformer(tolower)) |> tm_map(removeWords, c(stopwords("english"), stopwords("spanish"), stopwords("portuguese")))
+capes <-  download_capes_data(c(1987:2022))
+#base consolidada
+df_capes <-  map_dfr(
+  capes,
+  read_parquet
+)
 
-tdm <- TermDocumentMatrix(scielo_corpus) |> as.matrix()
-palavras <- sort(rowSums(tdm), decreasing = T)
-df <- data.frame(palavra = names(palavras), freq = palavras)
-df$peso <- round(df$freq/sum(df$freq)*100, 2)
-wordcloud2(df, size= 0.3, shape= "star", rotateRatio = .5, ellipticity = .10, color = "pink")
+#repetir o título em letra minuscula para evitar falso positivo e falso negativo
+
+df_capes$titulo_min <- tolower(df_capes$titulo)  #colocar tudo em minusculo e evita falso positivo e falso negativo 
+
+df_capes$tema <- stringr:: #quando ele vier ver o tema lá na base df_capes na coluna tema, ele já vai direto procurar a string que contiver essses nomes e todos em minusculo devido a função tolower da função anterior
+  str_detect(
+  df_capes$titulo_min, "supremo tribunal federal|\\bstf\\b|supremo tribunal brasileiro|corte suprema brasileira| corte constitucional brasileira|surpreme federal court"
+)
+
+df_tematica_capes <-  df_capes |>  
+  filter(tema == "TRUE") |>  
+  arrange(ano_base) |>  
+  dplyr:: select(-tema) #verifica se tem ou não esses termos referidos
+
+
+write_xlsx(df_tematica_capes, "stf_capes_xlsx")
+
+#agroa se tem tantos os stf que tem em capes quanto os que tem em scielo 
+
+
+##Gráficos 
+
+df_agg_ano_capes <-  df_tematica_capes |> 
+  group(ano_base)  |>  #agrupar com essa função 
+  summarise(n_casos())  #vai listar a quantidade de casos 
+
+df_agg_ano_scielo <-  df_tematica_scielo |> 
+  group(year)  |>  #agrupar com essa função 
+  summarise(n_casos())  #vai listar a quantidade de casos 
+
+sum(df_agg_ano_capes$casos)
+sum(df_agg_ano_scielo$casos)
+
+library(ggtext)  #faz gráficos super bonitos 
+
+??ggtext
+
+##Extra : NUVEM DE PALAVRAS
+
+
+
+
+#PACOTES
+if(!require("pacman")) install.packages("pacman")
+library(pacman)
+
+pacman:: p_load(tidyverse, 
+                wordcloud2,
+                tm   
+)
+
+
+
+#Dados referentes ao scielo e ao capes
+
+
+scielo_corpus <-  VCorpus(VectorSource((df_tematica_scielo)))  # Vai transformar em corpus a partir do título do trabalho
+
+#Limpeza da df
+
+scielo_corpus <-  scielo_corpus |> 
+  #tiro numeros
+  tm_map(removeNumbers) |> 
+  #tiro pontuações 
+  tm_map(removePunctuation) |> 
+  tm_map(content_transformer(tolower)) |> 
+  tm_map(
+    #removepalvras
+    removeWords,c(stopwords("english"),stopwords("spanish"),stopwords("portuguese") 
+                  )
+    
+  )
+
+#transformação para um matriz
+tdm <- TermDocumentMatrix(scielo_corpus) |>  as.matrix() #transforma em matrix 
+#identificar as palavras
+palavras <-  sort(rowSums(tdm),decreasing = T) #Ordena a frequencia que vai aparecer 
+#Juntar a partir da frequência das palavras e quantas vezes se repetiu 
+df <- data.frame(palavra = names(palavras), freq = palavras) #Coloca as palavras dentro da matrix
+
+#Juntar a partir da frequência das palavras e quantas vezes se repetiu 
+
+df$peso <-  df$freq/sum(df$freq)*100 # Peso relativo de cada palavra utilizada 
+df$peso <-  round(df$peso, 2) #para arredondar para dois digitos essa multiplicação predecessora 
+wordcloud2(df, 
+           size= 0.3,shape= "star",
+           rotateRatio = .5,
+           ellipticity = .10,
+           color = "pink") # jeito que vai ser feito a nuvem de palavras
+
+
 ```
 
 </details>
@@ -48,20 +178,55 @@ wordcloud2(df, size= 0.3, shape= "star", rotateRatio = .5, ellipticity = .10, co
 <summary>🎬 2. Análise Exploratória: Como escolher bons filmes? (MUBI)</summary>
 
 ```r
+
+#Utilizar uma base dos filmes do MUBI e com isso explorar seu conteúdo e usar o Data Science para escolher filmes que são bons
+
+
+#utilizo o load para carregar uma base que já está no meu projeto de R 
+load("base de dados que já está disponível no meu projeto de R")
+
+nrows("base") #consigo ver a qtde de linahs que tenho na base 
+ncol("base") #consigo ver a qtde de colunas que tem na minha base 
+names("base") #consiog ver os nomes nos cabeçalhos 
+
+
+
+
 if(!require("pacman")) install.packages("pacman")
 library(pacman)
-pacman::p_load(dplyr, ggplot2, forcats)
 
-# load("base de dados que já está disponível no meu projeto de R")
-# Agregações de Dados e Criação de Gráficos
+pacman:: p_load(
+  dplyr ,# Manipulação de Dados
+  ggplot2, #produção de gráficos
+  forcats #ordenar categorias(alvo da análise)
+)
+
+
+#Criação de Gráfiicos 
+#função geom_text é a função para colocar os valores dentro do gráfico
+
+"Planilha" |>  
+  filter() |>
+  slice() #faz um recorte dos dados que voce que r
+|> 
+  mutate(fct_reorder()) |>
+  ggplot() + 
+  geom_col() +
+  geom_text() + coord_flip() + 
+  theme_bw() + 
+  labs()
+
+#Agregações de Dados
+
+
+
 movies_agg <- base |>  
   group_by() |> 
   summarise(n_casos=n()) |>  
   arrange(-n_casos)
 
-"Planilha" |>  
-  filter() |> slice() |> mutate(fct_reorder()) |>
-  ggplot() + geom_col() + geom_text() + coord_flip() + theme_bw() + labs()
+head(movies_agg)
+
 ```
 
 </details>
@@ -70,29 +235,146 @@ movies_agg <- base |>
 <summary>🕷️ 3. Web Scrapping: Raspagem de Dados de Pacotes do CRAN</summary>
 
 ```r
+
+#Raspagem de dados em Dados estáticos 
+
+
 if(!require("pacman")) install.packages("pacman")
 library(pacman)
-pacman::p_load(rvest, lubridate, dplyr, stringr, ggrepel, ggplot2)
 
-url <- "[https://cran.r-project.org/web/packages/available_packages_by_date.html](https://cran.r-project.org/web/packages/available_packages_by_date.html)"
-page <- read_html(url)
+pacman:: p_load(
+  rvest, #pacote utilizado para a raspagem de dados 
+  lubridate #manipulação de datas ,
+  , dplyr, 
+  stringr,
+  ggrepel #colocar rótulos de forma mais elegante
+  , ggplot2
+  )
 
-packages_data <- page |> html_node("table") |> html_nodes("tr") |> html_nodes("td") |> html_text() |> matrix(ncol = 3, byrow = TRUE)
 
-pacotes_r <- as.data.frame(packages_data, stringsAsFactors = FALSE)
-colnames(pacotes_r) <- c("data","nome_pacote","descricao")
-pacotes_r$data <- as.Date(pacotes_r$data, format = "%Y-%m-%d")
+#url de interesse que eu quero puxar as informações
+
+url <-  "https://cran.r-project.org/web/packages/available_packages_by_date.html"
+
+#ler a url que vamos mandar par o R ler o contéudo do link
+
+page <-  read_html(url)
+
+#extração do conteúdo ou seja vamos extrair as informações do link proveniente 
+
+packages_data <- page |>
+  #Consigo extrair as informações da página para um objeto 
+  html_node("table") |>  
+  html_nodes("tr") |>  
+  html_nodes("td") |> 
+  html_text() |> 
+  #transporto tudo para uma matriz
+  matrix(ncol = 3, byrow = TRUE)
+
+#conversão da matriz de dados = depois disso, vamos estruturar em um planilha de dados
+
+pacotes_r  <-  as.data.frame(packages_data, stringsAsFactors = FALSE)
+#coloco os nomes na minha matriz que tava com os nomes muito paia
+colnames(pacotes_r) <-  c("data","nome_pacote","descricao")
+
+
+#Como tnho variáve data eu posso pegar o ano, ele pega e cira uma coluna só com o ano 
+
+pacotes_r$data <- as.Date(pacotes_r$data,format = "%Y-%m-%d")
 pacotes_r$ano <- year(pacotes_r$data)
-pacotes_r$descricao <- tolower(pacotes_r$descricao)
 
-# Filtro por tema (ex: cluster)
-pacotes_r$tema <- str_detect(pacotes_r$descricao,"cluster")
-df_tematica <- pacotes_r |> filter(tema == "TRUE") |> arrange(data) |> dplyr::select(-tema)
 
-# Visualização da série histórica
+
+#Pra finalizar eu posso passar para salvar e salvar no formato de escel
+#Sys date já utiliza a data atual
+
+write_xlsx(pacotes_r,paste("df_pacotes_r", format(
+  #Sys.Date coloca a data atual e não precisa ficar atualizando 
+  Sys.Date(),"%d-%m-%Y")))
+
+#Deixar tudo minusculo de lei, para não decorrer de ocorrer do caso de falso negativo e falso positivo 
+
+pacotes_r$descricao <-  tolower(pacotes_r$descricao)
+
+#Vou agora escolher um tema para com que eu consiga buscar e que falem com  survey 
+
+#ele vai olhar se na frase de descrição existe ou não na coluna descricao a palavra cluster e se tiver TRUE e senão FALSE
+
+#cria a variável tema e com o str_detect ele procura pra ver se tem ou não na coluna a string "cluster"
+pacotes_r$tema <-  str_detect(pacotes_r$descricao,"cluster")
+
+
+df_tematica <-  pacotes_r |>  
+  filter( tema == "TRUE") |>  
+  arrange(data) |>  
+  dplyr::select(-tema)
+
+#se tiver vedadeiro se não tiver é fake
+
+
+#importa para onde voce quiser
+write_xlsx(df_tematica, "C:..")
+
+
+
+#outra forma é de fazer o Web Scrapping é 
+
+
+#a estrutura é a mesma, só muda a questão do que vai ser utilizado para se achar
+pacotes_r$time_series <- str_detect(pacotes_r$descricao,"time series")
+#se tiver é verdadeiro
+df_tematica <- pacotes_r |> 
+filter(time_series == "TRUE") |>  
+  arrange(data) |> 
+  dplyr:: select(-tema,-time_series)  
+
+write_xlsx(df_tematica,"C: ")
+
+  
+#a estrutura é a mesma, só muda a questão do que vai ser utilizado para se achar
+
+
+pacotes_r$regression <- str_detect(pacotes_r$descricao,"regression")
+
+#se tiver é verdadeiro
+filter(regression == "TRUE") |>  
+  arrange(data) |> 
+  dplyr:: select(-tema,-regression)  
+
+write_xlsx(df_tematica,"C: ")
+
+
+
+
+#SCRIPT EXTRA 
+
+
+#Pode se agregar e fazer um gráfico
+
+
 df_tematica |>  
-  group_by(ano) |> summarise(n_pacotes=n()) |> mutate(ano=as.numeric(ano)) |>  
-  ggplot(aes(ano,n_pacotes)) + geom_line(size = 3, col = "blue") + geom_point(size = 25, alpha = .25, col = "blue") + theme_bw()
+  group_by(ano) |> 
+  summarise(n_pacotes=n()) |> 
+  mutate(ano=as.numeric(ano)) |>   #transforma ano em numérico
+  ggplot(aes(ano,n_pacotes)) + 
+  geom_line(alpha = .05, 
+            size = 3., col = "blue") +
+  geom_point(size = 25, alpha = .25, col = "blue") +
+  scale_x_continuous(breaks = seq(2008,2025,by=1)) + 
+  theme_bw() +
+  labs( x="",
+        y="",
+        title = "Número de pacotes para conteúdo Time Series no CRAN",
+        subtitle = "(2011 - 2025)",
+        caption = "Fonte: Eu" + 
+          geom_text(aes(label = n_pacotes),size = 10) +
+          theme(
+            legend.title = element_blank(),
+            text = element_text(size =30),
+            asis.text.x = element_text(angle=45, hjust = 1)
+            
+          )
+  )  
 ```
 
 </details>
@@ -101,15 +383,41 @@ df_tematica |>
 <summary>👤 4. Identificação de Gênero a partir do Nome (IBGE/genderBR)</summary>
 
 ```r
+
+#poderia usar o pacote pacmnan também 
 install.packages("genderBR")
 library(genderBR)
 
-nome <- c("PEDRO","AUGUSTO","AMANDA","KLEITON","GEOVANA")
-idade <- c(18,19,20,30,25)
+#crio objetos para cria a base 
+nome <-  (c("PEDRO","AUGUSTO","AMANDA","KLEITON","GEOVANA"))
+idade <-  (c(18,19,20,30,25))
 
+#faz um data frame desses dois objetos
 bse <- as.data.frame(cbind(nome,idade))
-bse$sexo <- get_gender(bse$nome) # Busca na base do IBGE via probabilidade
+#dá uma olhada
 View(bse)
+#cria uma nova coluna com o genero dos nomes
+#como que ele sabe o sexo? esse pacote busca lá na base do IBGE os nomes e ve se é home ou muié
+#ele busca lá e por meio da probabilidae ele joga
+
+bse$sexo  <-  get_gender(bse$nome)
+#e agora na nossa base ele aparece com o sexo 
+View(bse)
+
+#posso ter nome é sobrenome e não muda nada 
+
+nome2 <- c("tauane matias", "caio batista")
+
+nome3 <-  get_gender(nome2)
+                        
+#por fim ele so ve pela probabilidade e não entra tão a fundo no nome
+
+
+#se for procurar por nomes mais estranhos ele vai pela probabilidade como por exemplo 
+# COM "T" ELE DÁ A PROBABILIDADE E COM "F" ELE DÁ QUAL É O SEXO DE FATO 
+  get_gender("João", prob = F)
+  
+  
 ```
 </details>
 
@@ -117,28 +425,74 @@ View(bse)
 <summary>♈ 5. Manipulação de Datas: Cálculo do Signo do Zodíaco</summary>
 
 ```r
-if(!require("pacman")) install.packages("pacman")
-library(pacman)
-pacman::p_load(readxl, DescTools, dplyr, lubridate, ggplot2, forcats, rio)
 
-base_signos <- read_excel("Teste_signos.xlsx") |> mutate(data_nascimento = make_date(Ano,Mês,Dia))
-base_signos$signo <- Zodiac(base_signos$data_nascimento)
+  if(!require("pacman")) install.packages("pacman")
+  library(pacman)
+  
+  pacman:: p_load(
+    readxl, #para ler arquivos externos
+    DescTools ,# a função que faz o calculo do signo tá nela
+    dplyr,
+    lubridate,
+    ggplot2,
+    forcats  #ordenar as categorias
+    ,rio 
+    )
+  #fiz desse jeito mais fácil
+  base_signos <- read_excel("Teste_signos.xlsx")
+  
+  
+  #faço o uso de alterar a tabela para conseguir calcular tal coisa 
+  
+  base_signos <-base_signos |>  
+    mutate(data_nascimento = make_date(Ano,Mês,Dia))
+  
+  #agora depois de fazer uma coluna com o dia de nascimento eu consigo a partir da função Zodiac fazer a questão do signo de cada pessoa
+  base_signos$signo <- Zodiac(base_signos$data_nascimento)
+  
+  View(base_signos)
 
-base_signos <- base_signos |> 
-  mutate(signo = case_when(
-    signo == "Virgo" ~ "Virgem", signo == "Capricorn" ~"Capricórnio",
-    signo == "Leo" ~"Leão", signo == "Pisces" ~"Peixe",
-    signo == "Aquarius" ~"Aquário", signo == "Cancer" ~ "Câncer",
-    signo == "Libra" ~"Libra", signo == "Scorpio" ~"Escorpião",
-    signo == "Taurus" ~"Touro", signo == "Sagittarius" ~"Sagitário",
-    signo == "Aries" ~"Áries", signo == "Gemini" ~"Gemêos"
-  ))
-
-df_agg <- base_signos |> group_by(signo) |> summarise(n_casos=n())
-df_agg$perc <- round(df_agg$n_casos/sum(df_agg$n_casos)*100, 1)
-
-df_agg |> mutate(signo = fct_reorder(signo,n_casos)) |> 
-  ggplot(aes(signo,perc)) + geom_col(col = "white", fill = "green", alpha =.7) + theme_minimal()
+  #sai em inglês porque o pacote é feito de lá 
+  #então para a tradução vamos fazer uma recodificação 
+  
+  base_signos <- base_signos |> 
+    mutate(signo = case_when(
+      signo == "Virgo" ~ "Virgem",
+      signo == "Capricorn" ~"Capricórnio",
+      signo == "Leo" ~"Leão",
+      signo == "Pisces" ~"Peixe",
+      signo == "Aquarius" ~"Aquário",
+      signo == "Cancer" ~ "Câncer",
+      signo == "Libra" ~"Libra",
+      signo == "Scorpio" ~"Escorpião",
+      signo == "Taurus" ~"Touro",
+      signo == "Sagittarius" ~"Sagitário",
+      signo == "Aries" ~"Áries",
+      signo == "Gemini" ~"Gemêos"
+    ))
+  
+  #agora vou agregar para fazer uma estatistica avançada 
+  
+  df_agg <-  base_signos |>  
+    group_by(signo) |> 
+    summarise(n_casos=n()) #calcula a frequência de pessoas de cada signo
+  
+  df_agg$perc <-  df_agg$n_casos/sum(df_agg$n_casos)* 100 #calcula a frequencia relativa dos numeros de casos
+  df_agg$perc <-  round(df_agg$perc,1 )   #arredondar os numeros para 1 percentuais em 1 casa decimal
+  
+  #Base pronta é só fazer um gráfico
+  df_agg  |> 
+  mutate(signo = fct_reorder(signo,n_casos)) |> 
+    ggplot(aes(signo,perc)) + 
+    geom_col(col = "white",
+             fill = "green",
+             alpha =.7) + 
+    labs(x= "",
+         y= ""
+         , title = "Signos mais frequentes entre a base de dados",
+         subtitle = "é rapaiz são os signos",
+         caption = "Carlos Canto (2026)") 
+ 
 ```
 
 </details>
@@ -146,29 +500,84 @@ df_agg |> mutate(signo = fct_reorder(signo,n_casos)) |>
 <summary> 📱 6. Geração de QR Code no R</summary>
 
 ```r
+  #pacote do qr code
 install.packages("qrcode")
-library(qrcode)
-
-code <- qr_code("link de interesse")
-plot(code)
-generate_svg(code, filename = "pasta de destino/qr.svg")
+  library(qrcode)
+  #basta colar o link, em que ele gera lá o df
+  code <-  qr_code("link de interesse")
+  #e o o plot mostra o qr code de forma automática já
+  plot(code)
+  
+  #tem a possibilidade de com a função utilizar a generate pra onde voce quer armazenar esse info
+  
+  generate_svg(code,filename = "pasta de destino/qr.svg")
 ```
 </details>
 <details> 
 <summary> 📊 7. Análise de Outliers: O Quarteto de Anscombe</summary>  
 
 ```r
-if(!require("pacman")) install.packages("pacman")
-library(pacman)
-pacman::p_load(fBasics, datasets, ggpubr, ggplot2)  
 
-anscombe <- datasets::anscombe
+#script que vai reproduzir um gráfico de um artigo sobre outlier
+  # https://www.sjsu.edu/faculty/gerstman/StatPrimer/anscombel1973.pdf
+  #Graphs in Statistical Analysis de F. J. Anscomber 
+  
+  if(!require("pacman")) install.packages("pacman")
+  library(pacman)
+  pacman:: p_load(fBasics ,
+                  datasets, #daonde vai pegar a base
+                  ggpubr, #organiza legendas
+                  ggplot2)  
+  
+  anscombe <-  datasets:: anscombe
 
-g1 <- anscombe |> ggplot(aes(x1,y1)) + geom_point(size=5, alpha=.5, col="darkorange") + theme_bw() + geom_smooth(method = "lm",alpha=.1) + stat_cor(method = "pearson",label.x = 3,label.y = 10,size=7)
-g2 <- anscombe |> ggplot(aes(x2,y2)) + geom_point(size=5, alpha=.5, col="darkorange") + theme_bw() + geom_smooth(method = "lm",alpha=.1) + stat_cor(method = "pearson",label.x = 3,label.y = 10,size=7)
-# (Repete para g3 e g4)
-ggarrange(g1,g2,g3,g4)
-# Demonstra que distribuições com o mesmo R podem ter correlações visuais totalmente diferentes.
+  #vamos fazer os gráficos de exemplo dos outliers
+  
+  
+  g1 <- anscombe |> 
+    ggplot(aes(x1,y1)) + geom_point(size=5, alpha=.5, col="darkorange") + 
+    theme_bw() + geom_smooth(method = "lm",alpha=.1) + 
+    stat_cor(method = "pearson",label.x = 3,label.y = 10,size=7) +
+    theme(text = element_text(size=20)) +
+    labs(subtitle = "EXEMPLO")
+  
+  plot(g1)
+
+  
+  g2 <- anscombe |> 
+    ggplot(aes(x2,y2)) + geom_point(size=5, alpha=.5, col="darkorange") + 
+    theme_bw() + geom_smooth(method = "lm",alpha=.1) + 
+    stat_cor(method = "pearson",label.x = 3,label.y = 10,size=7) +
+    theme(text = element_text(size=20)) +
+    labs(subtitle = "EXEMPLO")
+  
+  plot(g2)
+
+  
+  g3 <- anscombe |> 
+    ggplot(aes(x3,y3)) + geom_point(size=5, alpha=.5, col="darkorange") + 
+    theme_bw() + geom_smooth(method = "lm",alpha=.1) + 
+    stat_cor(method = "pearson",label.x = 3,label.y = 10,size=7) +
+    theme(text = element_text(size=20)) +
+    labs(subtitle = "EXEMPLO")
+    
+  plot(g3)
+  
+  g4 <- anscombe |> 
+    ggplot(aes(x4,y4)) + geom_point(size=5, alpha=.5, col="darkorange") + 
+    theme_bw() + geom_smooth(method = "lm",alpha=.1) + 
+    stat_cor(method = "pearson",label.x = 3,label.y = 10,size=7) +
+    theme(text = element_text(size=20)) +
+    labs(subtitle = "EXEMPLO")
+  
+  plot(g4)
+
+  #nunca faça análise de correlação sem olhar pro gráfico
+  
+  ggarrange(g1,g2,g3,g4)
+  
+  #em que eles tem o mesmo R porém eles tem formas de distribuição de correlação totalmente diferentes
+  
 ```
 
 </details>
@@ -177,24 +586,61 @@ ggarrange(g1,g2,g3,g4)
 <summary>🎸 8. Identificação e Destaque de Outliers em Gráficos (Simulação Iron Maiden)</summary>
 
 ```r 
-if(!require("pacman")) install.packages("pacman")
-library(pacman)
-pacman::p_load(ggplot2, ggrepel, dplyr)
+  if(!require("pacman")) install.packages("pacman")
+  library(pacman)
+  pacman::p_load(
+    ggplot2,
+    ggrepel, # para conseguir afastar os rótulos 
+    dplyr
+  )
+  
+  #essa raiz é sobre simulações em que se consegue ver
+  
+  #1º passo da simulação é fazer o primeira base de tudo para ter sempre a mesma informação 
+  
+  set.seed(123)
 
-set.seed(123)
-y <- rnorm(n=665, mean = 200, sd=5)
-
-# Cria um outlier 6.6 desvios padrões abaixo da média
-Outlier <- mean(y) - 6.6 * sd(y)
-y <- c(y,Outlier)
-df <- data.frame(y)
-df$id <- c(1:666)
-
-df <- df |> mutate(Outlier = ifelse(id %in% c("666"), T, F))
-
-ggplot(df, aes(id,y)) + geom_point() + theme_bw() + 
-  geom_label_repel(data = filter(df, Outlier == T), aes(label = id), size =10) +
-  geom_point(data = . |> filter(id == "666"), size =11, shape = 19, fill = "red", color = "red", alpha = .5)
+  #fazer uma variável dependente
+  y  <-  rnorm(n=665,
+               mean = 200,
+               sd=5)
+  
+  mean(y)
+  sd(y)  
+  
+  
+  
+  #agora criarei um caso que vai estar 6 desvios padroes abaixo da média
+  
+  #cria um outlier que está 6.6 desvios padrôes abaixo da média 
+  Outlier <-  mean(y) - 6.6 * sd(y)
+  
+  y <- c(y,Outlier)
+  df <-  data.frame(y)
+  df$id <-c(1:666)
+  
+  #Informar ao R que esse caso 666 é o caso outlier
+  
+  
+  df <- df |> 
+    mutate(Outlier = 
+             ifelse(id %in% c ("666"),
+                    T,F))
+  
+  
+  ggplot(df, aes(id,y)) + geom_point() + theme_bw() + 
+    labs(x = "Casos possíveis", 
+         y="Váriavel dependente",
+         title = "Como selecionar casos como Iron Maiden?") +
+    #label repel
+    geom_label_repel(data = filter(df, Outlier == T), aes(label = id), size =10)
++ geom_point(data = . |>  filter(id == "666"),
+  size =11, shape = 19,
+  fill  = "red", color = "red" ,alpha = .5) +
+  theme(text = element_text(size = 24))
+  
+  #Qual que a importância disso? Mostrar qual a aquela váriavel que mudou e que vai ficar só o caso com  o rótulo e não todos
+  
 ```
 
 </details>
@@ -204,16 +650,56 @@ ggplot(df, aes(id,y)) + geom_point() + theme_bw() +
 
 ```r
 if(!require("pacman")) install.packages("pacman")
-library(pacman)
-pacman::p_load(ggstatsplot, ggplot2, dplyr)
+  library(pacman)
+  #carregar pacotes 
+  pacman:: p_load(ggstatsplot,ggplot2,dplyr)
 
-set.seed(123)
-x <- rnorm(100)
-y <- -0.11 * x + rnorm(100, mean = 0, sd= 0.2) 
-
-data <- data.frame(x,y)
-data |>  
-  ggplot(aes(x,y)) + geom_point(size=5, col="black", fill="red", shape=21) + theme_bw() + geom_smooth(method = "lm", alpha=.2) + labs(x = "Escolaridade", y= "Renda", title = "Representação de uma hipótese de trabalho")
+  set.seed(123)
+  
+  x <- rnorm(100)
+  y <- -0.11 * x + rnorm(100,mean = 0, sd= 0.2)  #quando eu mudar o valor termo que multiplica com x, vai mudar o valor da correlação
+  #testando com uma correlação positiva com o multiplicador positivo 
+  #testaando com uma correlação negativa com multiplicar negativo 
+  
+  data <- data.frame(x,y)
+  data |>  
+    ggplot(aes(x,y))+ 
+    geom_point(size =5,
+               col= "black",
+               fill="red",
+               shape=21) + 
+  theme_bw() + geom_smooth(method = "lm", alpha=.2) + 
+    labs(x = "Escolaridade",
+         y= "Renda",
+         title = "Representação de uma hipótese de trabalho") + 
+    theme(text = element_text(size = 20))
+  #de forma geral 
+  
+  
+  #variavel de grupo 
+  #como fazer com a diferença entre grupos 
+  # criação dos grupos 
+  g1 <- rnorm(100, mean = .9,sd = 1)
+  g2<- rnorm(100, mean = 25,sd = 3)
+  g3<- rnorm(100, mean = 20,sd = 3)
+  g4<- rnorm(100, mean = .2,sd = .7)
+#cria a base de dados com todos eles 
+  df <-  data.frame(y=c(g1,g2,g3,g4),
+                    grupo = rep(c("Brancos", "negros","pardos",
+                                  "Amarelos"), each=100))
+  
+  
+  #NÃO DEU CERTO DE USAR O GGSTATSPLOT, NÃO DEU CERTO 
+  #ELE USA A ggbetweenstats como função pra gerar
+  
+  ggbetweenstats(df,grupo, y, centrality,label.args= list(size=5)) +
+    labs(title = "iso",subtitle = "", x= "",
+         y="") + theme(text = element_text(size = 20))
+  
+  #se eu for fazer uma simulação com apenas 2 grupos - Pesquisa Clínica ou etc
+  
+  g1 <- rnorm(100, mean = 40,sd = 1)  #Experimental
+  g2<- rnorm(100, mean = 10,sd = 4)   #Controle meu 
 ```
 
 </details>
@@ -221,44 +707,159 @@ data |>
 <summary>📉 10. Identificação de Tipos de Distribuição (fitdistrplus)</summary>
 
 ```r
-if(!require("pacman")) install.packages("pacman")
-library(pacman)
-pacman::p_load(fitdistrplus)
+  if(!require("pacman")) install.packages("pacman")
+  library(pacman)
+  pacman::p_load(fitdistrplus)
 
-set.seed(123)
-n <- 1000
+#pacote fitdistrplus é um pacote que vê qual que o tipo de distribuição que você está trabalhando e ve qual o modelo mais adequado para trabalhar com aquilo  
 
-# Geração de diversas distribuições para teste
-x1 <- rnorm(n,mean = 10,sd=2)
-x2 <- runif(n,min = 0,max = 1)
-x3 <- rexp(n,rate = 0.5)
+  #iremos simular uma base de dados 
+  
+  set.seed(123)
 
-descdist(x1, discrete = FALSE) # Normal
-descdist(x2, discrete = FALSE) # Uniforme
-descdist(x3, discrete = FALSE) # Exponencial
+  #determinar o tamanho da amostra 
+  
+  n <- 1000
+  
+  #geraremos varias distribuições 
+  
+  #Normal
+  
+  x1 <- rnorm(n,mean = 10,sd=2)
+  
+  #Uniforme
+  
+  x2 <- runif(n,min = 0,max = 1)
+  
+  #Exponencial
+  
+  x3 <- rexp(n,rate = 0.5)
+  
+  #Logística
+  x4 <- rlogis(n,location = 0,scale = 1)  #para area de pesquisa
+  
+  #Beta
+  x5 <- rbeta(n,shape1=2,shape2 = 5)   #frnacisco kibari que faz essa regressão beta
+  
+  #Lognormal
+  x6 <- rlnorm(n,meanlog = 1,sdlog=0.5)
+  
+  #Gamma
+  x7 <- rgamma(n,shape=3,scale=2)
+  
+ #agora juntaremos todas em um df 
+  
+  
+  
+  df <-  data.frame(c(x1,x2,x3,x4,x5,x6,x7))   #feita as variaveis
+  
+  #agora para testar iremos visualizar com 
+  
+  descdist(x1,discrete = FALSE) #NORMAL
+  #OUTRA FORMA DE VER E FAZENDO UM HISTOGRAMA
+  hist(x1)
+  
+  descdist(x2,discrete = FALSE) #UNIFORME
+  #idem
+  hist(x2)
+  
+  descdist(x3,discrete = FALSE) #EXPONENCIAL
+  hist(x3)
+  
+  descdist(x4,discrete = FALSE) #LOGISTICA
+  hist(x4)
+  
+  descdist(x5,discrete = FALSE) #BETA
+  hist(x5)
+  
+  descdist(x6,discrete = FALSE) #LOGNORMAL
+  hist(x6)
+  
+  descdist(x7,discrete = FALSE) #GAMMA
+  hist(x7)
+  
+  
+  #ELE MOSTRA A CURTOSE E A RAIZ DA SIMETRIA
+  #E MOSTRA QUAL QUE É A DISTRIBUIÇÃO TEÓRICA ESPERADA, OU SEJA, AQUELA QUE MELHOR SE ENCAIXA
+  #PROCURA ONDE O VERMELHO ESTÁ MAIS PRÓXIMO
 ```
 </details>
 <details>  
 <summary> 💰 11. Desigualdade: Cálculo do Coeficiente de Gini e Curva de Lorenz</summary>
 
 ```r
-if(!require("pacman")) install.packages("pacman")
-library(pacman)
-pacman::p_load(dplyr, ggplot2, ineq, scales, tibble)
+#TAMBÉM CONHECIDO COMO ÍNDICE DE GINI - QUE CALCULA DE FORMA GERAL A CONCENTRAÇÃO DE RENDA (PODE SER QUALQUER CONCETRAÇÃO, EX:RESTAURANTES, LOJAS...)
+  #UTILIZANDO TAMBÉM A CURVA DE LORENZ 
+   if(!require("pacman")) install.packages("pacman")
+  library(pacman)
+  pacman::p_load(dplyr #MANIPULAR DADOS
+                 ,ggplot2,ineq # AQUI QUE TEM A FUNÇÃO PARA CALCULAR GINI 
+                 ,scales #TRABALHAR COM ESCALAS
+                 ,tibble #CRIAR DFS E TAL
+                  )
+  
+  set.seed(123)
 
-set.seed(123)
-n <- 1000
-renda <- rlnorm(n, meanlog = 8, sdlog=0.8)
-dados <- tibble(id = 1:n, renda=renda)  
+  #Gerar dados simulados  
+  
+  n <- 1000
+  renda <- rlnorm(n,meanlog = 8,sdlog=0.8)
+dados <- tibble(id = 1:n,
+                renda=renda
+                )  
+  
+#Cálculo de gini
 
-# Cálculo de Gini (ineq)
 gini <- ineq::Gini(dados$renda)
+gini
+#como que interpreto? ela sempre varia entre 0 e 1 , 0 quando todo mundo tem a merma renda e 1 quando só 1 pessoa tem a renda toda
+#como se fosse numa pizzaria e voce deveria pegar pelo menos 1 pedaço e se não tivesse nenhum ou voce comesse todos seria algo que essa tal coisa está concentrando aquela pizza 
 
-# Curva de Lorenz
+#exemplo manual para ajudar a visualizar
+
+x1 <- c(1,1,1,1,1,1,1,1,1)
+ineq::Gini(x1)
+
+
+x2 <- c(0,0,0,0,0,0,0,1)
+ineq::Gini(x2)
+#não dá 1 porque teria de tender ao infinito para todos irem convergirem a ser 1 
+
+#Calculo manual de gini 
+#Formula
+#G=[2*sum(i*y_1)]\[n*sum(y_1)] -(n+1)\n
+
+#GINI de 1 = desigualdade máxima
+#Gini de 0 = igualdade perfeita
+
+
+
+
+#CURVA DE LORENZ - TAMBÉM COM O PACOTE INEQ
 lorenz <- ineq::Lc(dados$renda)
-lorenz_df <- data.frame(p = lorenz$p, L = lorenz$L)
 
-ggplot(lorenz_df, aes(x=p, y=L)) + geom_line(size=1.2) + geom_abline(linetype="dashed") + theme_minimal() 
+#converter para df 
+lorenz_df <-  data.frame(
+  p= lorenz$p,  #proporção acumulada da população 
+  l=lorenz$L    #proporção acumulada da renda 
+)
+
+#agora vou plotar 
+
+ggplot(lorenz_df, aes(x=p,y=L)) + 
+  geom_line(size=1.2) + 
+  geom_abline(linetype="dashed")+ 
+  labs(title="",subtitle = "") + theme_minimal()
+
+#quanto menor a barriga do gráfico de gini, então a concentração é menor e quanto maior a barriga do gráfico de gini então maior a concentração - de acordo com a Curva de Lorenz
+
+#sites que tem dados bons 
+#IPEA
+##https://www.ipea.gov.br/desafios/index.php?option=com_content&id=2048%3Acatid%3D28
+#GINI
+#https://www.ipea.gov.br/desafios/index.php?option=com_content&id=2048%3Acatid%3D28
+#BANCO MUNDIAL
+#https://data.worldbank.org/indicator/SI.POV.GINI
 ```
 
 </details> 
@@ -266,20 +867,49 @@ ggplot(lorenz_df, aes(x=p, y=L)) + geom_line(size=1.2) + geom_abline(linetype="d
 <summary>➗ 12. Gráfico Teórico: Equação de Heckman (Capital Humano)</summary>
   
 ```r
+#equação de heckman é aquela equação que é o efeito do que que acontece com a produtividade quando se investe em educação básica, quanto mais cedo se investe no individuo maior a taxa de retorno
+
+install.packages("ggplot2")
 library(ggplot2)
 
+#Simular base de dados
 set.seed(123)
 age <- seq(0,30,by=0.1)
-return_rate <- 0.6 * exp(-0.1*age) # curva exponencial decrescente
-df <- data.frame(age = age, return_rate = return_rate)
+return_rate <-  0.6 *exp(-0.1*age) #curva exponencial decrescente 
 
-df$stage <- cut(df$age, breaks = c(-Inf,5,18,Inf), labels = c("Preschool","School","Post-school"))
+#criar df
+df <- data.frame(age = age, return_rate= return_rate)
+
+#Definir as regiões analisadas, pré escola, escoal e pós escola 
+df$stage <-  
+  cut(df$age,
+      breaks = c(-Inf,5,18,Inf),
+      labels = c("Preschool","School","Post-school")
+      )
+
+
+#Linha do custo de oportunidade
 
 ggplot(df, aes(x=age,y=return_rate)) + 
   geom_ribbon(aes(ymin = 0,ymax = return_rate, fill = stage),alpha = 0.3) + 
-  geom_line(color = "red", size=1.2) +
+  geom_line(color = "red", size=1.2)+
+  geom_hline(yintercept = r_line,linetype="dashed") + 
+  #annotate eu consigo escrever dentro do gráfico 
+  annotate("text",x=2.2,y=0.3,label="Programas do Prézinho",color="orange",size=8) + 
+  annotate("text",x=8.5,y=0.03,label="Programas na Escola",color="pink",size=8) + 
+  annotate("text",x=2.2,y=0.3,label="Programas Pós Escol",color="blue",size=8) + 
   scale_fill_manual(values= c("Preschool"="gold","School"="skyblue","Post-school"="lightgreen")) +
-  theme_minimal()
+labs(x= "Idade", y="taxa de retorno",
+     title = "Taxa de retorno de investimento em capital humano",
+     caption = "fonte: eu")
++theme_minimal() +
+  theme_minimal(base_size=25)+
+  theme(legend.title = element_blank())
+                              
+                              
+                              
+                              
+       
 ```
 
 </details>
@@ -288,13 +918,110 @@ ggplot(df, aes(x=age,y=return_rate)) +
 <summary>⚖️ 13. Extração de PDFs e Jurimetria: Dados do 8 de Janeiro</summary>
   
 ```r
-if(!require("pacman")) install.packages("pacman")
+if(!require("pacman"))  install.packages("pacman")
 library(pacman)
-pacman::p_load(pdftools, writexl, stringr, DescTools, dplyr, ggplot2, forcats)
 
-# Scraping de lista oficial em PDF
-pdf_file <- "LISTA-NOMES-outras-ufs.pdf"
-pdf_text_content <- pdf_text(pdf_file)
+#pacotes 
+pacman::p_load(
+  pdftools, #LEITURA DE ARQUIVOS PDF 
+  writexl,   #EXPORTAÇÃO PARA ARQUIVOS .XLSX
+  stringr,  #MANIPULAÇÃO DE STRINGS
+  DescTools, #FUNÇÕES ESTATÍSTICAS E UTILITÁRIAS
+  dpylr,  #MANIPULAÇÃO DE DADOS
+  ggplot2,
+  forcats #MANIPULAÇÃO DE VARIAVEIS FATOR 
+)
+
+#LER CONTEUDO DE PDF DA PF 
+pdf_file <-  "LISTA-NOMES-outras-ufs.pdf"  #Caminho do PDF
+pdf_text_content <-  pdf_text(pdf_file)
+
+#Processar o texto de PDF 
+#extração de nomes 
+
+# processamento de dados
+nomes <- c()
+datas_nascimento <- c()
+ufs <- c()
+
+for (page in pdf_text_content) {
+  # Separar o texto por linhas 
+  linhas <- str_split(page, "\n")[[1]]
+  
+  for (linha in linhas) {
+    # Regex para buscar: [NOME] [DATA dd/mm/aaaa ou dd. mm. aaaa] [UF]
+    # Nota: Ajustei para capturar nomes e datas comuns em listas oficiais
+    match <- str_match(linha, "^\\s*(.*?)\\s+(\\d{2}[./]\\s*\\d{2}[./]\\s*\\d{4})\\s+([A-Z]{2})")
+    
+    if(!is.na(match[1])) {
+      nomes <- c(nomes, match[2])
+      datas_nascimento <- c(datas_nascimento, match[3])
+      ufs <- c(ufs, match[4])
+    }
+  }
+}
+
+#criar data frame
+df <- data.frame(
+  nome = nomes,
+  data_nascimento = datas_nascimento,
+  uf = ufs,
+  stringsAsFactors = FALSE
+)
+
+#tratar dados
+# Removendo espaços extras que às vezes vêm do PDF (ex: "01. 01. 1990")
+df$data_nascimento <- str_replace_all(df$data_nascimento, " ", "")
+df$data_date <- as.Date(df$data_nascimento, format = "%d.%m.%Y") 
+
+# Se o separador for barra (/) em vez de ponto, use:
+# df$data_date <- as.Date(df$data_nascimento, format = "%d/%m/%Y")
+
+df$signo <- Zodiac(df$data_date)
+
+df <- df %>% 
+  mutate(zodiaco = case_when(
+    signo == "Virgo" ~ "Virgem",
+    signo == "Capricorn" ~ "Capricórnio",
+    signo == "Leo" ~ "Leão",
+    signo == "Pisces" ~ "Peixes",
+    signo == "Aquarius" ~ "Aquário",
+    signo == "Cancer" ~ "Câncer",
+    signo == "Libra" ~ "Libra",
+    signo == "Scorpio" ~ "Escorpião",
+    signo == "Taurus" ~ "Touro",
+    signo == "Sagittarius" ~ "Sagitário",
+    signo == "Aries" ~ "Áries",
+    signo == "Gemini" ~ "Gêmeos"
+  ))
+
+#agregando
+df_agg <- df %>%
+  filter(!is.na(zodiaco)) %>% # Remove se houver data errada
+  group_by(zodiaco) %>%
+  summarise(n_casos = n()) %>%
+  ungroup()
+
+# Calcular percentual (como no seu print)
+df_agg$perc <- round((df_agg$n_casos / sum(df_agg$n_casos)) * 100, 2)
+
+# código para plotar 
+df_agg %>%
+  mutate(zodiaco = fct_reorder(zodiaco, n_casos)) %>%
+  ggplot(aes(zodiaco, perc)) +
+  geom_col(col = "black", fill = "darkred", alpha = .7) +
+  coord_flip() +
+  labs(x = "", y = "%", 
+       title = "Signos mais frequentes das pessoas presas durante o 8 de janeiro",
+       subtitle = "Análise baseada em dados públicos",
+       caption = "Fonte: Figueiredo Filho (2026)") +
+  theme_bw() +
+  geom_text(aes(label = perc), size = 6.5, hjust = -0.1, vjust = 0.3) +
+  theme(text = element_text(size = 23))
+
+#exportar para excel
+write_xlsx(df, "signotananam")
+write_xlsx(df_agg,"signoossss")
 ```
 
 </details>
@@ -302,18 +1029,126 @@ pdf_text_content <- pdf_text(pdf_file)
 <summary>🗺️ 14. Geoprocessamento: Mapas Estaduais e Variação do Gini (geobr)</summary>
 
 ```r
+
+#carregar 
 if(!require("pacman")) install.packages("pacman")
 library(pacman)
-pacman::p_load(readxl, janitor, dplyr, stringr, sf, geobr, ggplot2)
+pacman::p_load(readxl,janitor #fazer limpeza de dados
+               ,dpylr,stringr, writexl)
 
-# Carrega shapefile do Brasil
-ufs <- read_state(year = 2020) |> clean_names() |> select(code_state,name_state,geom)
+#Dados 
+gini_1985 <- read_excel("Dados brutos/renomados/gini_1985.xlsx")
+gini_95_96 <- read_excel("Dados brutos/renomados/gini_95_96.xlsx")
+gini_2006 <- read_excel("Dados brutos/renomados/gini_2006.xlsx")
+gini_2017 <- read_excel("Dados brutos/renomados/gini_2017.xlsx")
 
-# Junção com dados processados de variação do Gini
- ggplot(gini_mapa) +
-  geom_sf(aes(fill= variacao), color=NA) +
-scale_fill_gradient2(low="blue", mid="green", high="red", midpoint=0, na.value="grey") +
- theme_void()
+#Padronização das bases
+names(gini_1985)
+
+
+#Empilhar todas
+gini_long <- bind_rows(
+  gini_1985 |>  (ano =1985),
+  #colocar as outras e ela empilha todas elas uma embaixo da outra 
+)
+#Base_Brasil (tirar ele de forma sozinha)
+gin_brasil <-  gini_long |>  
+  filter(Nome_uf == "Brasil")
+
+gini_brasil$gini <-  round(gini_brasil$gini,3) #só vai arredondar 
+
+
+#Base_regioes
+gini_regioes <- gini_long |>  
+   filter(str_detect(Nome_uf,"região"))
+
+
+#Base_estado 
+gini_estados <- gini_long |>  
+  filter(cod_mun = "0000",
+         nome_uf !="Brasil",         #não quero o brasil
+         !str_detect(nome_uf,"região"))#não quero a região 
+
+
+gini_regioes$gini <-  round(gini_regioes$gini,3) 
+         
+gini_estados$gini <-  round(gini_estados$gini,3) 
+
+#Base municipios 
+
+gini_estados <- gini_long |>  
+  filter(code_mun != "00000") 
+
+gini_municipios$gini <-  round(gini_municipios$gini,3) 
+
+#salvar em excel
+write_xlsx(gini_estados,"dados.xlsx")
+#escreve de cada um
+
+
+#fazendo um mapa agora
+#mostrando a variação do gini na terra 
+
+if(!require("pacman")) install.packages("pacman")
+library(pacman)
+pacman::p_load(readxl,janitor #fazer limpeza de dados
+               ,dplyr,stringr, sf #para trabalhar com mapas
+               , geobr #importar os shapes(os mapas)
+               ,ggplot2
+               )
+
+#carregar a base
+
+load("dados") #objeto gini_estados ou outro 
+
+#carregar shapefile das ufs (geobr)
+
+#vou acrescentar na minha planilha o shape file de cada lugar 
+ufs <-  read_state(year = 2020) |> 
+  clean_names() |> 
+  select(code_state,name_state,geom)
+
+#limpar e preparar os dados
+
+gini_estados <-  gini_estados |>  
+  clean_names() |> 
+  mutate(cod_uf = as.numeric(cod_uf))
+
+#filtrar anos de interesse
+
+
+gini_1985 <- gini_estados |>  
+  filter(ano==1985) |> 
+  select(cod_uf,gini_1985=gini)
+
+#fazer com os outos iguais
+
+
+#calcular variação absoluta do GINI
+
+gini_variaçao <- 
+  gini_2017 |>  
+  left_join(gini_1985, by ="cod_uf") |> 
+  mutate(variaçao = gini_2017 - gini_1985,
+         situação_desigualdade = case_when (
+           variacao > 0 ~"aumentou",
+           variacao = 0 ~"sem variacao",
+           variacao < 0 ~"diminuiu",
+           TRUE ~NA_character_
+         ))
+
+
+#mapa com gradiente de cor 
+ggplot(gini_mapa) +
+  geom_sf(aes(fill= variacao),color=NA #se eu colocar esse ele aparece o contorno das fronteiras 
+          ) +
+  scale_fill_gradient2(nome = 
+                         "",
+                       low= "blue",mid ="green",high = "red",midpoint = 0, na.value = "grey") +
+  labs(title = "",subtitle = "", caption = "") + theme_void( base_size = 16)
+
+#dá pra fazer com todos os dfs
+
 ```
 
 </details>
@@ -342,13 +1177,109 @@ df$distancia_para_recife_kms <- distGeo(
 ```r
 if(!require("pacman")) install.packages("pacman")
 library(pacman)
-pacman::p_load(rvest, tidyr, stringr, lubridate, janitor, dplyr, genderBR)
+pacman::p_load(rvest, tidyr, stringr, lubridate, janitor, readr, purrr, dplyr,
+               ggstatsplot, genderBR, freqdist)
 
-url <- "[https://pt.wikipedia.org/wiki/Lista_de_presidentes_do_Banco_Central_do_Brasil](https://pt.wikipedia.org/wiki/Lista_de_presidentes_do_Banco_Central_do_Brasil)"
+url <- "https://pt.wikipedia.org/wiki/Lista_de_presidentes_do_Banco_Central_do_Brasil"
 pg <- read_html(url)
 
-tabs <- pg |> html_elements('table.wikitable') |> html_table(fill = TRUE)
-# Funções blindadas de limpeza construídas no script para extrair, limpar Regex e prever sexo dos presidentes via genderBR.
+# --- Titulos das seções ---
+heads <- pg |> 
+  html_elements("h2 .mw-headline") |> 
+  html_text() |>  
+  stringr::str_squish()
+
+# --- Total de wikitables ---
+tabs <- pg |>  
+  html_elements('table.wikitable') |> 
+  html_table(fill = TRUE)
+
+# --- Função para limpar a tabela (VERSÃO BLINDADA) ---
+clean_one <- function(tb, section_name) {
+  temp <- tb |> 
+    janitor::clean_names() |> 
+    select(-matches("^foto$"), everything())
+  
+  # Tentativa de renomear colunas dinamicamente
+  temp <- temp |> 
+    rename(
+      nome = matches("nome|titular|presidente_do_banco"),
+      inicio = matches("in[íi]cio"),
+      fim = matches("^fim$"),
+      presidente_republica = matches("^presidente")
+    )
+  
+  # PROTEÇÃO: Se a coluna 'nome' não foi criada pelo rename, cria uma fake para não dar erro no mutate
+  if(!"nome" %in% names(temp)) {
+    temp$nome <- NA_character_
+  }
+  
+  temp |>
+    tidyr::fill(presidente_republica, .direction = "down") |> 
+    mutate(secao = section_name)
+}
+
+# --- Identificação das Seções Alvo ---
+alvos_regex <- "Ditadura Militar|Nova República"
+alvos_idx <- which(str_detect(heads, alvos_regex))
+
+# Filtramos apenas as tabelas que estão sob esses títulos
+section_labels <- heads[alvos_idx]
+tabs_filtradas <- tabs[alvos_idx]
+
+# --- Limpar e unificar ---
+bc_raw <- purrr::map2_dfr(tabs_filtradas, section_labels, clean_one)
+
+# --- Dados limpos ---
+bc <- bc_raw |> 
+  # Agora o 'nome' existe obrigatoriamente (mesmo que como NA)
+  filter(!is.na(nome)) |> 
+  mutate(
+    nome = stringr::str_squish(as.character(nome)),
+    interino = str_detect(str_to_lower(nome), "interino"),
+    nome = str_remove_all(nome, "(?i)\\s*\\(interino\\)\\s*")
+  ) |>
+  mutate(
+    fim = ifelse(str_detect(str_to_lower(fim), "exerc|atual"), NA_character_, fim),
+    inicio = str_squish(inicio),
+    fim = str_squish(fim),
+    inicio_date = suppressWarnings(lubridate::dmy(inicio)),
+    fim_date = suppressWarnings(lubridate::dmy(fim))
+  ) |>
+  # Filtra para remover linhas de cabeçalho repetidas ou vazias
+  filter(nome != "" & !str_detect(nome, "Independ|Presidente|№|Titular")) |> 
+  transmute(
+    secao, 
+    nome_presidente_bc = nome,
+    interino,
+    inicio, fim,
+    inicio_date, fim_date,
+    presidente_da_republica = presidente_republica
+  )
+
+# --- Duração e Sexo ---
+bc <- bc |> 
+  mutate(
+    duracao_dias = as.integer(fim_date - inicio_date),
+    duracao_anos = round(duracao_dias/365.25, 2)
+  ) |> 
+  mutate(primeiro_nome = str_extract(nome_presidente_bc, "^\\w+")) |>
+  mutate(sexo = genderBR::get_gender(primeiro_nome)) |> 
+  mutate(sexo = case_when(
+    nome_presidente_bc == "Wadico Waldir Bucchi" ~ "Male",
+    sexo == "Female" ~ "Feminino",
+    sexo == "Male" ~ "Masculino",
+    TRUE ~ sexo
+  ))
+
+# --- Salvar e Plotar ---
+write_csv(bc, "presidente_bcb_wikipedia.csv")
+cat("\nArquivos salvos!")
+
+print(head(bc, 10))
+
+ggstatsplot::ggpiestats(data = bc, x = sexo, title = "Sexo dos Presidentes do BCB")
+
 ```
 
 </details> 
@@ -358,17 +1289,115 @@ tabs <- pg |> html_elements('table.wikitable') |> html_table(fill = TRUE)
 ```r
 if(!require("pacman")) install.packages("pacman")
 library(pacman)
-pacman::p_load(gganimate, tidyr, dplyr, lubridate, gghighlight, ggplot2, ggrepel, ggthemes)
+pacman::p_load(gganimate,
+               tidyr  #Transformar a base em formato long
+, dplyr #manipulação de dados
+  ,lubridate,
+  ,gghighlight #destaque pra ficar mais bonito
+,
+  ggplot2,ggpurrr, ggstatsplot,gganimate # pacote que vai animar os gráficos
+,
+ggrepel #para repelir rótulos
+,ggthemes #formate o gráfico a partir de temas pré estabelecidos
+)
 
-# PARTE 1 - IDEB
-# pivot_longer e animação com transition_reveal(ano)
+#ler base de dados
 
-# PARTE 2 - Casos de Dengue
-# Animado com ease_aes('linear') e transition_reveal(ano)
+ideb |>  read.excel("IDEB")
 
-# PARTE 3 - Tendências Históricas (Golpes de Estado)
-# Uso de predict(lm(...)) animado com a linha de tendência seguindo os pontos.
-# anim_save("animacao.gif")
+#Data frame
+
+ideb_df <- ideb_df |>  
+  mutate(across(x(ideb_17,ideb_18,ideb_19)))
+
+#Converter todas as colunas que tem ideb em formato numérico
+
+#agora usar tidyr para mudar todos que tem wide em formato long
+#Graficos e estatisticas 
+
+ideb_long <- ideb_df |>  
+  pivot_longer(
+    cols= starts_with("ideb_"),  #Seleciona todas as colunas que tem ideb 
+    names_to= "ano", #nome da nova coluna ano 
+    values_to = "ideb" # Nome da nova coluna ano com os valores de ideb
+  )
+
+
+ideb_long <- ideb_long |> 
+  mutate(
+    ano = case_when(
+      ano==  "ideb_17" ~ 2017,
+      ano==  "ideb_18" ~ 2018,
+      ano==  "ideb_19" ~ 2019,
+      TRUE ~ as.numeric(ano)
+    )
+  )
+class(ideb_long$ano) #A variavel de tempo tem que ser numeric, senão vai dar erro 
+
+#EXEMPLO 
+
+quixaba <- ideb_long |>  
+  filter(uf =="PE" & 
+           rede == "Pública" & 
+           nível == "EM") |> 
+  ggplot(aes(ano,ideb,colour = nome_mun,
+             fil="blue")) + 
+  geom_line(size= 1.5,
+            alpha = .5,
+            fill="blue",
+            col="blue") +
+  geomhighlight(nome_mun == "Quixaba",
+                label_pares=list(size = 8,
+                                 fill ="gray",
+                                 col=.9)) + 
+  geom_text(aes(label = nome_mun),
+            size= 9 ,
+            fontface = 'bold', col = "blue") +
+  theme_bw() + 
+  labs(x= "",
+       y="IDEB",
+       title="IDEB em Pernambuco(2017-2023)",
+       caption="fonbte: EU") +
+  theme(text= element_text(size=22)) + 
+  scale_x_continuous(breaks=seq(2017,2019,by=2)) + 
+  transition_reveal(ano)  #Informação que eu quero que a informação seja animada por ano 
+
+
+quixaba  #estudo de caso dessa cidade é mostrado 
+
+anim_save("IDEB/quixaba.gif")
+
+#Outra abordagem 
+ideg_agg <- ideb_long |> 
+  filter(rede =="Pública" & nível == "EM") |> 
+  group_by(uf,ano) |> 
+  summarise(avg_ideb = mean(ideb,na.rm =T))
+
+ sp_pe  <- ideg_agg |> 
+   ggplot(aes(ano, avg_ideb , 
+              colour = uf,   #A cor é baseada no nome da uf
+              fill= uf     # a cor de preenchimento é baseada na uf 
+              )) +
+  geom_line(size=1.5, alpha =.5)+
+   geomhighlight(uf %in% #esse in é pra ele escolher esses dois que estão no vetor, ou seja, SP e PE 
+                   
+                   c("SP","PE"), #DESTACA SP E PE NOS DEMAIS 
+                label_params=list(size = 8,
+                                  fill = "gray",
+                                  col= "blue",
+                                  alpha= .9)) + 
+   geom_text_repel(aes(label=uf),
+                   size =9,
+                   fontface = 'bold',
+                   vjust=-.3) + 
+   scale_color_manual(values = c("SP" = "blue", "PE"="red"))
+                   
+sp_pe_economist <-  sp_pe + theme_economist()  #para aparecer como se fosse do tipo economista 
+
+#ou fazer do tipo wsj
+
+sp_pe_wsj <- sp_pe + scale_color_wsj() #para ficar com gif com tipo de wall street journal
+
 ```
 
 </details>
@@ -376,16 +1405,77 @@ pacman::p_load(gganimate, tidyr, dplyr, lubridate, gghighlight, ggplot2, ggrepel
 <summary>🌐 18. Análise de Redes: Mapeamento de Coautoria (Google Scholar)</summary>
 
 ```r
-install.packages("scholar")
-library(scholar)
-library(ggplot2)
-
-data_scholar <- get_coauthors('5sz_jBoAAAAJ6hl')
-
-plot_coauthors(data_scholar) + 
-  labs(title = paste("Rede de cobertura de", data_scholar$author),
-       subtitle = paste("Atualizado em", format(Sys.Date(), "%d de %B de %Y"))) +
-  theme_void(base_size = 20)
+  
+install.packages("scholar")  #salvando o pacote de R 
+library(scholar)  #esse comando chama o pacote para o ambiente do R , ajuda a automatizar os dados do perfil do google escola 
+  
+#data frame
+  
+  data_scholar <-  get_coauthors('5sz_jBoAAAAJ6hl')  #para puxar os dados da internet, em que ele puxa esses dados do google escola e com o user que é esse ai, sendo esse o id de cada pesquisador do mundo 
+  
+  
+ #nivel 1 
+  plot_coauthors(data_scholar)  #esse é o gráfico de coautores dos autores de todos aqueles que são coautores 
+  #daria pra fazer uma rede de crimes tambem, dá pra fazer uma rede de varias coisas 
+  
+  
+  install.packages("ggplot2")  
+  library(ggplot2) 
+  
+  #Nivel 2- adicionei as legendas em pt br 
+  
+  plot_coauthors(data_scholar) + 
+    labs(title = "rede de cobertura ",
+         subtitle = "dados",
+         caption = "fonte:eu")
+  
+  #Nivel 3 - mudei o tamanho das fontes 
+  plot_coauthors(data_scholar) + 
+    labs(title = "rede de cobertura ",
+         subtitle = "dados",
+         caption = "fonte:eu") +_
+  theme_void(base_size = 20) + 
+    theme(
+      plot.title = element_text(size=36,face="bold"),
+      plot.subtitle = element_text(size = 24),
+      plot.caption = element_text(size = 16),
+      plot.title.position = "plot"
+    )
+  
+  #nivel 4 - automatizei com a questão de aparecer o dia já de prontidão 
+  
+  nome <- data_scholar$author
+  
+  plot_coauthors(data_scholar) + 
+    labs(title = paste("rede de cobertura de",nome),
+         subtitle = paste("Atualizado em", format (Sys.Date(),"%d de %B de %Y")),
+         caption = "fonte:eu") +
+  theme_void(base_size = 20) + 
+    theme(
+      plot.title = element_text(size=36,face="bold"),
+      plot.subtitle = element_text(size = 24),
+      plot.caption = element_text(size = 16),
+      plot.title.position = "plot"
+    )
+  
+  #exemplos 
+  
+  coauthors_network <-  get_coauthors("codigo id")
+  
+  nom <- coauthors_network$autor
+  plot_coauthors(coauthors_network) + 
+    labs(title = paste("rede de cobertura de",nome),
+         subtitle = paste("Atualizado em", format (Sys.Date(),"%d de %B de %Y")),
+         caption = "fonte:eu") +
+    theme_void(base_size = 20) + 
+    theme(
+      plot.title = element_text(size=36,face="bold"),
+      plot.subtitle = element_text(size = 24),
+      plot.caption = element_text(size = 16),
+      plot.title.position = "plot"
+    )
+  
+  
 ```
 
 </details>
@@ -394,20 +1484,74 @@ plot_coauthors(data_scholar) +
 <summary>🧪 19. Estatística Paramétrica: Testando Pressupostos de Regressão Linear</summary>
 
 ```r
+
+#Aprender a testar os pressupostos do modelo de regressão 
+
 if(!require("pacman")) install.packages("pacman")
 library(pacman)
-pacman::p_load(performance, dplyr, ggplot2, sjPlot)
 
-# Simulação de modelo múltiplo
-modelo1 <- lm(y ~ x1+x2+x3+x4, data = data)
+pacman:: p_load(
+  performance, 
+  dplyr,
+  ggplot2
+)
 
-# Testes de Pressupostos via pacote performance
+set.seed(123)  # Para reprodutibilidade
+
+options()
+??options
+#Tamanho da amostra 
+
+n <-  1000
+
+#Gerando preditores 
+
+x1 <- rnorm(n, mean = 5, sd=2)
+x2 <- rnorm(n, mean = 3, sd=1)
+x3 <- rnorm(n, mean = 0, sd=1)
+x4 <- rnorm(n, mean = -2, sd=1)
+
+
+y <-2*x1 + 1.5*x2 + 0.1*x3 - 2.5*x4 + rnorm(n)    #a variavel com menor impacto é x3 e a com maior é x4 por ser a maior e ser negativo, e o rnorm(n) é o erro
+
+#criando o data frame 
+
+data <- data_frame(y,x1,x2,x3,x4)
+
+#dados criados agora mão na massa da regressão linear 
+
+modelo1 <- lm(y ~ x1+x2+x3+x4 , data = data)
+summary(modelo1)
+
+#os modelos estão próximos dos que foram estipulados, com modelos simulados é fácil NA VIDA REAL É DIFERNTE 
+
+#agora que foi estipulado iremos ver no pacote performance:
+#valores e signifcancia dos coeficientes, ou seja, ele vai mostrar estatisticas de ajuste
+
+performance:: performance(modelo1)
+
 performance::check_collinearity(modelo1)
-performance::check_normality(modelo1)
-performance::check_outliers(modelo1)
-performance::check_heteroscedasticity(modelo1)
 
-sjPlot::plot_model(modelo1, show.intercept = T, ci.lvl = 0.95) + theme_bw()
+performance::check_normality(modelo1)
+
+performance::check_outliers(modelo1)  #modelo de regressão não pode ter nenhum outlier muito danoso
+
+performance::check_heteroscedasticity(modelo1)  #para ver se a diferença nas variaâncias
+
+performance::check_model(modelo1)
+
+#Vamos visualizar os resultados graficamente
+
+install.packages("sjPlot")
+library(sjPlot)
+
+plot <- sjPlot:: plot_model(modelo1,show.intercept = T, ci.lvl = 0.95) +
+  theme_bw()
+  
+plot(plot)
+
+plot + geom_hline(yintercept = 0,linetype = "bold",color= "green",size=2,alpha=.5)
+
 ```
 </details>
 
@@ -431,19 +1575,188 @@ library(ggpubr)
 <details>
 <summary>🔍 21. Forense Eleitoral e Auditoria: A Lei de Benford</summary>
 ```r
-if(!require("pacman")) install.packages("pacman")
-library(pacman)
-pacman::p_load(tidyverse, scales, freqdist, ggplot2, benford.analysis)
+  # Forense Eleitoral
+  # detecção estatistica de sistematica de irregularidades eleitorais,feitos pelo Klimack e o Turner
+  # o que é visto é a taxa de comparecimento e os votantes
+  # nao se deve ter nenhuma concentração de pontos no canto direito porque todos naquela zona "coincidentemente" votaram no mesmo cara, isso pode ser uma sinalização de que aquilo pode ser algo muito estranho ali
+  # a frequencia é algo totalmemte necessário para que eu possa ver algo no mínimo relevante para analisar
+  # science advances tambéme é outra fonte que valida essa forma de analisar
+  # pode se criar anomalias ou presenças de algo diferente porem não sao coisas que so podem levar as fraudes, podem ser catastrofes,eventos urbanos cimo blitz e etc...
+  # Técnica que quanto mais desagregada melhor, ou seja, por sessão é o melhor e depois zona, mun e estado
+  # para mudar e não ter nada é muito deveriam ter que ficar com varias salas com coordenação muito especifica para não ficar rastros 
+  
+  if(!require("pacman")) install.packages("pacman" )
+  # Nota: 'sclaes' foi corrigido para 'scales'. Adicionado 'electionsBR' para consumo da API do TSE.
+  p_load(dplyr, ggplot2, patchwork, janitor, readxl, scales, viridis, stringr, electionsBR ) 
+  
+  options(scipen = 999 )
+  
+  
+  # 1. Funções Auxiliares
+  
+  
+  padronizar_chaves_secao <- function(base) {
+    base %>%
+      mutate(
+        CD_MUNICIPIO = as.character(CD_MUNICIPIO),
+        NR_ZONA = as.character(NR_ZONA),
+        NR_SECAO = as.character(NR_SECAO)
+      )
+  }
+  
+  fazer_fingerprint <- function(base, 
+                                y_var = "vote_share",
+                                titulo,
+                                label_y,
+                                bins = 35,
+                                legenda_fill = "Número de\nseções") {
+    
+    ggplot(base, aes(x = turnout, y = .data[[y_var]])) +
+      geom_bin_2d(bins = bins) +
+      scale_x_continuous(
+        labels = percent_format(accuracy = 1),
+        limits = c(0, 1)
+      ) +
+      scale_y_continuous(
+        labels = percent_format(accuracy = 1),
+        limits = c(0, 1)
+      ) +
+      scale_fill_viridis_c(
+        option = "plasma",
+        name = legenda_fill
+      ) +
+      labs(
+        x = "Turnout",
+        y = label_y,
+        title = titulo
+      ) +
+      theme(
+        plot.title = element_text(hjust = 0.5, face = "bold"),
+        text = element_text(size = 14)
+      )
+  }
+  
+  resumir_votos_turno <- function(base, turno) {
+    base %>%
+      filter(NR_TURNO == turno) %>%
+      group_by(NM_VOTAVEL, NR_VOTAVEL) %>%
+      summarise(
+        total_votos = sum(QT_VOTOS, na.rm = TRUE),
+        .groups = "drop"
+      ) %>%
+      mutate(
+        votos_validos = sum(
+          total_votos[!NM_VOTAVEL %in% c("VOTO NULO", "VOTO BRANCO")],
+          na.rm = TRUE
+        ),
+        percentual = round(100 * total_votos / votos_validos, 2)
+      ) %>%
+      select(-votos_validos) %>%
+      arrange(desc(total_votos))
+  }
+  
+  preparar_base_fingerprint_secao <- function(base, turno) {
+    base %>%
+      filter(
+        NR_TURNO == turno,
+        !is.na(turnout),
+        !is.na(vote_share),
+        between(turnout, 0, 1),
+        between(vote_share, 0, 1)
+      ) %>%
+      distinct(
+        ANO_ELEICAO,
+        NR_TURNO,
+        CD_MUNICIPIO, # Inserido para ligar as imagens cortadas
+        NR_ZONA,      # Inserido para ligar as imagens cortadas
+        NR_SECAO,     # Inserido para ligar as imagens cortadas
+        turnout,
+        vote_share
+      )
+  }
+  
+  filtrar_candidato <- function(base, candidato) {
+    base %>%
+      filter(NM_VOTAVEL == candidato)
+  }
+  
+  # 2. Dados via API (Exemplo com electionsBR)
 
-# 1. Lei de Benford Tradicional (1º Dígito)
-bfd.teste <- benford(dados$valor, 1)
-plot(bfd.teste)
+  # Exemplo de como usar a API para puxar os dados diretamente do Repositório 
+  # de Dados Eleitorais do TSE.
+  
+  dados_tse <- vote_section_fed(year = 2022, uf = "all") %>% 
+  clean_names()
+ 
+  # 3. MUNICÍPIOS - 1º turno
+  
+  
+  dados_municipio <- read_excel(
+    "raw-data/votos_presidente_muni_nexojornal_2022.xlsx",
+    sheet = "absoluto-1t-2022"
+  ) %>%
+    clean_names() %>%
+    mutate(
+      turnout = comparecimento / eleitores,
+      # Aqui você precisa calcular a proporção de votos do candidato alvo
+      # Supondo que a coluna de votos dele se chame 'votos_candidato_x'
+      vote_share = votos_candidato_x / comparecimento 
+    )
 
-# 2. Lei de Benford do Segundo Dígito (2BL) em Dados Eleitorais do TSE (Mebane Approach)
-# Validação da integridade dos dados através da distribuição teórica do segundo dígito (Média esperada: 4.187)
+  # 4. PROCESSAMENTO DOS DADOS (EXEMPLO COM DADOS POR SEÇÃO DO TSE)
 
-# 3. Election Fingerprint Analysis
-# Análise de densidade conjunta 2D via geom_bin_2d() para identificar distorções no Turnout vs. Vote Share.
+  # Como você anotou, a análise por seção é a melhor. Vamos simular o fluxo
+  # de cálculo de Turnout e Vote Share assumindo que usamos a base 'dados_tse'
+  
+  # 4.1 Calcular comparecimento (turnout) e votos totais por seção
+  dados_secao <- dados_tse %>%
+    group_by(ano_eleicao, nr_turno, sg_uf, cd_municipio, nr_zona, nr_secao) %>%
+    mutate(
+      # Total de votos registrados na urna (votos válidos + nulos + brancos)
+      comparecimento = sum(qt_votos, na.rm = TRUE),
+      
+      # Turnout (Taxa de comparecimento): Comparecimento / Eleitores Aptos
+      # Certifique-se de que a coluna de eleitores aptos se chama 'qt_aptos'
+      turnout = comparecimento / qt_aptos 
+    ) %>%
+    ungroup()
+  
+  # 4.2 Escolher o candidato alvo e calcular o Vote Share
+  candidato_alvo <- "NOME DO CANDIDATO" # Substitua pelo nome exato que está na base
+  
+  base_candidato <- dados_secao %>%
+    # Usa a função que você criou para filtrar o candidato
+    filtrar_candidato(candidato_alvo) %>%
+    mutate(
+      # Vote share: Proporção de votos do candidato em relação ao comparecimento total da seção
+      vote_share = qt_votos / comparecimento
+    )
+  
+  # 4.3 Preparar a base final para o plot (exemplo: 1º Turno)
+  base_pronta_fingerprint <- preparar_base_fingerprint_secao(
+    base = base_candidato, 
+    turno = 1
+  )
+  
+  # 5. GERANDO E SALVANDO O FINGERPRINT (GRÁFICO)
+ 
+  
+  # Usa a função principal que você construiu com o ggplot2
+  grafico_fingerprint <- fazer_fingerprint(
+    base = base_pronta_fingerprint,
+    y_var = "vote_share",
+    titulo = paste("Fingerprint Eleitoral (1º Turno) -", candidato_alvo),
+    label_y = "Vote Share (Votos do Candidato / Comparecimento)",
+    bins = 40 # Você pode ajustar o tamanho dos "quadradinhos" aqui
+  )
+  
+  # Exibe o gráfico no visualizador do RStudio
+  print(grafico_fingerprint)
+  
+  # Caso queira salvar o gráfico em alta resolução
+ ggsave("fingerprint_candidato_1t.png", plot = grafico_fingerprint, width = 10, height = 7, dpi = 300)
+
+  
 ```
 </details
 
