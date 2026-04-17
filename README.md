@@ -646,60 +646,92 @@ install.packages("qrcode")
 </details>
 
 <details>
-<summary>📈 9. Representação Gráfica de Hipótese de Trabalho</summary>
+<summary>📈 9. Noçoes de Jurimetria</summary>
 
 ```r
-if(!require("pacman")) install.packages("pacman")
-  library(pacman)
-  #carregar pacotes 
-  pacman:: p_load(ggstatsplot,ggplot2,dplyr)
 
-  set.seed(123)
+ #Relacionado ao direito
+ #jurimetria em que voce usa a estatistica para analisar os fenomenos de direito 
+ 
+ #Jurimetria: juntar ciencia e direito 
+ 
+ 
+ install.packages("abjData")
+ library(abjData)       #pacote de dados da associação brasileira de jurimetria(abj), criada pra começar a difundir essas ideias 
+ 
+ data("assuntos")  # para carregar a base 
+ 
+ View(assuntos)
+ 
+ names(assuntos)  # para saber o nome das variáveis 
+ 
+ ncol(assuntos)    # para saber o número de colunas 
+ 
+ nrow(assuntos)   #quantas linhas eu tenho na base 
+ 
+ str(assuntos)   #tipo das variaveis 
   
-  x <- rnorm(100)
-  y <- -0.11 * x + rnorm(100,mean = 0, sd= 0.2)  #quando eu mudar o valor termo que multiplica com x, vai mudar o valor da correlação
-  #testando com uma correlação positiva com o multiplicador positivo 
-  #testaando com uma correlação negativa com multiplicar negativo 
+ class(assuntos)  #qual a classe do objeot 
+ 
+head(assuntos)    #primeiras linhas 
+
+tail(assuntos)    #últimas linhas 
+
+summary(assuntos)  #estatisticas descritivas básicas 
+
+
+
+#Estatística Descritiva Básica 
+
+mean(assuntos$total)
+
+median(assuntos$total)   #ela não é afetada por outliers, mais robusta a outliers
+
+min(assuntos$total)    #valor minimo 
+
+max(assuntos$total)   #valor maximo 
+
+sd(assuntos$total)   #para ver quao homogenea ou quao heterogenea é a distribuição 
+
+range(assuntos$total)   #o espectro do menor valor para o maior valor(max - min)  amplitude 
+
+summary(assuntos$total) #útil para variaveis quantitativas 
+
+
+#Exemplo 2 
+
+data("leiloes")   #pegar a base no ambiente 
+
+View(leiloes)     #para ver a base 
   
-  data <- data.frame(x,y)
-  data |>  
-    ggplot(aes(x,y))+ 
-    geom_point(size =5,
-               col= "black",
-               fill="red",
-               shape=21) + 
-  theme_bw() + geom_smooth(method = "lm", alpha=.2) + 
-    labs(x = "Escolaridade",
-         y= "Renda",
-         title = "Representação de uma hipótese de trabalho") + 
-    theme(text = element_text(size = 20))
-  #de forma geral 
-  
-  
-  #variavel de grupo 
-  #como fazer com a diferença entre grupos 
-  # criação dos grupos 
-  g1 <- rnorm(100, mean = .9,sd = 1)
-  g2<- rnorm(100, mean = 25,sd = 3)
-  g3<- rnorm(100, mean = 20,sd = 3)
-  g4<- rnorm(100, mean = .2,sd = .7)
-#cria a base de dados com todos eles 
-  df <-  data.frame(y=c(g1,g2,g3,g4),
-                    grupo = rep(c("Brancos", "negros","pardos",
-                                  "Amarelos"), each=100))
-  
-  
-  #NÃO DEU CERTO DE USAR O GGSTATSPLOT, NÃO DEU CERTO 
-  #ELE USA A ggbetweenstats como função pra gerar
-  
-  ggbetweenstats(df,grupo, y, centrality,label.args= list(size=5)) +
-    labs(title = "iso",subtitle = "", x= "",
-         y="") + theme(text = element_text(size = 20))
-  
-  #se eu for fazer uma simulação com apenas 2 grupos - Pesquisa Clínica ou etc
-  
-  g1 <- rnorm(100, mean = 40,sd = 1)  #Experimental
-  g2<- rnorm(100, mean = 10,sd = 4)   #Controle meu 
+dim(leiloes)  #retorna o numero de linhas e colunas 
+
+table(leiloes$vendeu)
+prop.table(table(leiloes$vendeu))
+
+mean()   #não faz sentido pegar media de varivel qualitativa 
+
+library(freqdist)
+
+freqdist(leiloes$vendeu)
+
+leiloes$dif <- leiloes$valor_total_arrematado - leiloes$valor_avaliacao_inicial
+
+mean(leiloes$dif)
+
+mean(leiloes$dif,na.rm = T)
+
+min(leiloes$dif,na.rm = T)
+ 
+max(leiloes$dif,na.rm = T) 
+
+leiloes$ratio <- leiloes$valor_total_arrematado/leiloes$valor_avaliacao_inicial 
+
+mean(leiloes$ratio, na.rm = T)
+ 
+median(leiloes$ratio, na.rm = T) 
+ 
+ 
 ```
 
 </details>
