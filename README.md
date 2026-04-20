@@ -1558,6 +1558,7 @@ library(ggpubr)
 
 <details>
 <summary>🔍 21. Forense Eleitoral e Auditoria: A Lei de Benford</summary>
+  
 ```r
   # Forense Eleitoral
   # detecção estatistica de sistematica de irregularidades eleitorais,feitos pelo Klimack e o Turner
@@ -1739,6 +1740,7 @@ library(ggpubr)
   
   # Caso queira salvar o gráfico em alta resolução
  ggsave("fingerprint_candidato_1t.png", plot = grafico_fingerprint, width = 10, height = 7, dpi = 300) 
+ 
 ```
 
 </details>
@@ -1747,7 +1749,7 @@ library(ggpubr)
 <summary> # 22. Implementação do Método Rozenas </summary>
 
 ```r
-oi
+
 
 ```
 
