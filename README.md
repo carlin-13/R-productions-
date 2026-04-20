@@ -1746,14 +1746,17 @@ library(ggpubr)
 </details>
 
 <details>
-<summary> # 22. Implementação do Método Rozenas </summary>
+<summary> ➕ 22. Implementação do Método Rozenas </summary>
 
 ```r
 
 
 ```
 
+</details>
 
+<details>
+<summary>  23. Estimador de status quo </summary>
 
 
 
