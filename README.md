@@ -1746,6 +1746,10 @@ library(ggpubr)
 <details>
 <summary> # 22. Implementação do Método Rozenas </summary>
 
+```r
+
+```
+
 
 
 
