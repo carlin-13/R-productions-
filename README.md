@@ -1747,6 +1747,7 @@ library(ggpubr)
 <summary> # 22. Implementação do Método Rozenas </summary>
 
 ```r
+oi
 
 ```
 
