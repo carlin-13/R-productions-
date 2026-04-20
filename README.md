@@ -1738,11 +1738,15 @@ library(ggpubr)
   print(grafico_fingerprint)
   
   # Caso queira salvar o gráfico em alta resolução
- ggsave("fingerprint_candidato_1t.png", plot = grafico_fingerprint, width = 10, height = 7, dpi = 300)
-
-  
+ ggsave("fingerprint_candidato_1t.png", plot = grafico_fingerprint, width = 10, height = 7, dpi = 300) 
 ```
-</details
+
+</details>
+
+<details>
+<summary> # 22. Implementação do Método Rozenas </summary>
+
+
 
 
 
