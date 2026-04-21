@@ -1935,16 +1935,15 @@ library(ggpubr)
  #aqui conseguimos ver atraves dos nomes das ruas que cada uma tem um nome que é de forma grande chamada por nome de um Homem
 
 ```
+<br>
 
-</details>
-
-</details>
-
-<br> <details>
+<details>
 <summary><b>💼 Projetos</b></summary>
 <br>
 
 <details style="margin-left: 20px;">
+<summary>📊 1. Estruturação, Automação e Dashboards de Pricing</summary>
+
 ```r
 ```
 
