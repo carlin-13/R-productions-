@@ -7,6 +7,7 @@ Aqui dentro contém minhas produções utilizando Rstudio
 Abaixo estão os scripts com base nas aulas do canal Datafobia, os quais apresentam desde testes de hipóteses até análises exploratórias usando Lei de Benford.
 <details>
 <summary><b> 📜 Estudos </b></summary>
+<br>
 
 <details style="margin-left: 20px;">
 <summary>🔎 1. Buscas Bibliográficas e Nuvem de Palavras (SciELO/CAPES)</summary>
@@ -1934,9 +1935,15 @@ library(ggpubr)
  #aqui conseguimos ver atraves dos nomes das ruas que cada uma tem um nome que é de forma grande chamada por nome de um Homem 
 ```
 
-<br> <details>
-  <summary><b>💼 Projetos</b></summary>
+<details>
+<summary><b> 💼 Projetos </b></summary>
+<br>
 
+<details style="margin-left: 20px;">
+<summary>Espço</summary>
+```r
+  
+```
 
 
 
