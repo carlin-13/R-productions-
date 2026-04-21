@@ -1937,13 +1937,12 @@ library(ggpubr)
 
 ```
 
-</details>
-
 <br>
 
 <details>
 <summary><b>💼 Projetos</b></summary>
 
-(Cole todo o seu conteúdo de Projetos aqui)
+<br>
 
-</details>
+<details style="margin-left: 20px;">
+<summary>📊 1. Estruturação, Automação e Dashboards de Pricing</summary>
