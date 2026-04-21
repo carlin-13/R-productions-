@@ -5,6 +5,7 @@ Aqui dentro contém minhas produções utilizando Rstudio
 ## 📚 Laboratório de R: Projetos & Estudos (Datafobia)
 
 Abaixo estão os scripts com base nas aulas do canal Datafobia, os quais apresentam desde testes de hipóteses até análises exploratórias usando Lei de Benford.
+E também meus projetos utilizando o Rstudio.
 
 <details>
 <summary><b>📜 Estudos</b></summary>
