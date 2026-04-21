@@ -6,7 +6,7 @@ Aqui dentro contém minhas produções utilizando Rstudio
 
 Abaixo estão os scripts com base nas aulas do canal Datafobia, os quais apresentam desde testes de hipóteses até análises exploratórias usando Lei de Benford.
 <details>
-<summary><b> 📜 Estudos </b></summary>
+<summary><b>📜 Estudos</b></summary>
 <br>
 
 <details style="margin-left: 20px;">
@@ -1936,7 +1936,15 @@ library(ggpubr)
 
 ```
 
+</details>
 
+</details>
+
+<br> <details>
+<summary><b>💼 Projetos</b></summary>
+<br>
+
+<details style="margin-left: 20px;">
 
 
 
