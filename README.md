@@ -1938,30 +1938,14 @@ library(ggpubr)
 
 ```
 
-</details>
 
+
+
+<br>
+<br>
+</details>
 <details>
-  
-<summary><b>🎯 Projetos</b></summary>
-<br> 
-
-<details style="margin-left: 20px;">
-<summary>📊 Projeto 1: [Nome do Projeto]</summary>
-
-[Descrição e código do projeto]
-
-</details>
-
-<details style="margin-left: 20px;">
-<summary>💡 Projeto 2: [Nome do Projeto]</summary>
-
-[Descrição e código do projeto]
-
-</details>
-
-</details>
-
-
+<summary></summary></summary>
 
 
 
