@@ -1932,13 +1932,15 @@ library(ggpubr)
    filter(genero_previsto == "Male") %>%
    arrange(desc(prop_masculina))
  
- #aqui conseguimos ver atraves dos nomes das ruas que cada uma tem um nome que é de forma grande chamada por nome de um Homem 
-```
+ #aqui conseguimos ver atraves dos nomes das ruas que cada uma tem um nome que é de forma grande chamada por nome de um Homem
 
+```
+</details>
 <details>
 <summary><b> 💼 Projetos </b></summary>
 <br>
 
+</details>
 <details style="margin-left: 20px;">
 <summary>Espço</summary>
 ```r
