@@ -1934,12 +1934,8 @@ library(ggpubr)
  #aqui conseguimos ver atraves dos nomes das ruas que cada uma tem um nome que é de forma grande chamada por nome de um Homem 
 ```
 
-<details>
-<summary><b> Projetos </b></summary>
-
-<details style="margin-left: 20px;">
-<summary>
-
+<br> <details>
+  <summary><b>💼 Projetos</b></summary>
 
 
 
