@@ -1840,6 +1840,7 @@ library(ggpubr)
 
 <details>
 <summary>  23. Estimador de status quo </summary>
+  
 ```r
    
 #utilizamos o começo de lei 
@@ -1931,7 +1932,6 @@ library(ggpubr)
    arrange(desc(prop_masculina))
  
  #aqui conseguimos ver atraves dos nomes das ruas que cada uma tem um nome que é de forma grande chamada por nome de um Homem 
- 
 ```
 
 <details>
