@@ -9,13 +9,9 @@ E também meus projetos utilizando o Rstudio.
 
 <details>
 <summary><b>📜 Estudos</b></summary>
-
 <details style="margin-left: 20px;">
 <summary>🔎 1. Buscas Bibliográficas e Nuvem de Palavras (SciELO/CAPES)</summary>
-
 ```r
-
-
 if(!require("pacman")) install.packages("pacman")
 library(pacman)
 
@@ -170,17 +166,11 @@ wordcloud2(df,
            rotateRatio = .5,
            ellipticity = .10,
            color = "pink") # jeito que vai ser feito a nuvem de palavras
-
-
 ```
-
 </details>
-
-<details>
+<details style="margin-left: 20px;">
 <summary>🎬 2. Análise Exploratória: Como escolher bons filmes? (MUBI)</summary>
-
 ```r
-
 #Utilizar uma base dos filmes do MUBI e com isso explorar seu conteúdo e usar o Data Science para escolher filmes que são bons
 
 
@@ -228,16 +218,11 @@ movies_agg <- base |>
   arrange(-n_casos)
 
 head(movies_agg)
-
 ```
-
 </details>
-
-<details>
+<details style="margin-left: 20px;">
 <summary>🕷️ 3. Web Scrapping: Raspagem de Dados de Pacotes do CRAN</summary>
-
 ```r
-
 #Raspagem de dados em Dados estáticos 
 
 
@@ -378,14 +363,10 @@ df_tematica |>
           )
   )  
 ```
-
 </details>
-
-<details>
+<details style="margin-left: 20px;">
 <summary>👤 4. Identificação de Gênero a partir do Nome (IBGE/genderBR)</summary>
-
 ```r
-
 #poderia usar o pacote pacmnan também 
 install.packages("genderBR")
 library(genderBR)
@@ -418,17 +399,12 @@ nome3 <-  get_gender(nome2)
 #se for procurar por nomes mais estranhos ele vai pela probabilidade como por exemplo 
 # COM "T" ELE DÁ A PROBABILIDADE E COM "F" ELE DÁ QUAL É O SEXO DE FATO 
   get_gender("João", prob = F)
-  
-  
 ```
 </details>
-
-<details>
+<details style="margin-left: 20px;">
 <summary>♈ 5. Manipulação de Datas: Cálculo do Signo do Zodíaco</summary>
-
 ```r
-
-  if(!require("pacman")) install.packages("pacman")
+if(!require("pacman")) install.packages("pacman")
   library(pacman)
   
   pacman:: p_load(
@@ -494,15 +470,12 @@ nome3 <-  get_gender(nome2)
          , title = "Signos mais frequentes entre a base de dados",
          subtitle = "é rapaiz são os signos",
          caption = "Carlos Canto (2026)") 
- 
 ```
-
 </details>
-<details>
-<summary> 📱 6. Geração de QR Code no R</summary>
-
+<details style="margin-left: 20px;">
+<summary>📱 6. Geração de QR Code no R</summary>
 ```r
-  #pacote do qr code
+#pacote do qr code
 install.packages("qrcode")
   library(qrcode)
   #basta colar o link, em que ele gera lá o df
@@ -515,11 +488,9 @@ install.packages("qrcode")
   generate_svg(code,filename = "pasta de destino/qr.svg")
 ```
 </details>
-<details> 
-<summary> 📊 7. Análise de Outliers: O Quarteto de Anscombe</summary>  
-
+<details style="margin-left: 20px;">
+<summary>📊 7. Análise de Outliers: O Quarteto de Anscombe</summary>
 ```r
-
 #script que vai reproduzir um gráfico de um artigo sobre outlier
   # https://www.sjsu.edu/faculty/gerstman/StatPrimer/anscombel1973.pdf
   #Graphs in Statistical Analysis de F. J. Anscomber 
@@ -579,16 +550,12 @@ install.packages("qrcode")
   ggarrange(g1,g2,g3,g4)
   
   #em que eles tem o mesmo R porém eles tem formas de distribuição de correlação totalmente diferentes
-  
 ```
-
 </details>
-
-<details>
+<details style="margin-left: 20px;">
 <summary>🎸 8. Identificação e Destaque de Outliers em Gráficos (Simulação Iron Maiden)</summary>
-
-```r 
-  if(!require("pacman")) install.packages("pacman")
+```r
+if(!require("pacman")) install.packages("pacman")
   library(pacman)
   pacman::p_load(
     ggplot2,
@@ -642,17 +609,12 @@ install.packages("qrcode")
   theme(text = element_text(size = 24))
   
   #Qual que a importância disso? Mostrar qual a aquela váriavel que mudou e que vai ficar só o caso com  o rótulo e não todos
-  
 ```
-
 </details>
-
-<details>
-<summary>⚖️9. Noçoes de Jurimetria</summary>
-
+<details style="margin-left: 20px;">
+<summary>⚖️ 9. Noçoes de Jurimetria</summary>
 ```r
-
- #Relacionado ao direito
+#Relacionado ao direito
  #jurimetria em que voce usa a estatistica para analisar os fenomenos de direito 
  
  #Jurimetria: juntar ciencia e direito 
@@ -732,16 +694,12 @@ leiloes$ratio <- leiloes$valor_total_arrematado/leiloes$valor_avaliacao_inicial
 mean(leiloes$ratio, na.rm = T)
  
 median(leiloes$ratio, na.rm = T) 
- 
- 
 ```
-
 </details>
-<details> 
+<details style="margin-left: 20px;">
 <summary>📉 10. Identificação de Tipos de Distribuição (fitdistrplus)</summary>
-
 ```r
-  if(!require("pacman")) install.packages("pacman")
+if(!require("pacman")) install.packages("pacman")
   library(pacman)
   pacman::p_load(fitdistrplus)
 
@@ -818,9 +776,8 @@ median(leiloes$ratio, na.rm = T)
   #PROCURA ONDE O VERMELHO ESTÁ MAIS PRÓXIMO
 ```
 </details>
-<details>  
-<summary> 💰 11. Desigualdade: Cálculo do Coeficiente de Gini e Curva de Lorenz</summary>
-
+<details style="margin-left: 20px;">
+<summary>💰 11. Desigualdade: Cálculo do Coeficiente de Gini e Curva de Lorenz</summary>
 ```r
 #TAMBÉM CONHECIDO COMO ÍNDICE DE GINI - QUE CALCULA DE FORMA GERAL A CONCENTRAÇÃO DE RENDA (PODE SER QUALQUER CONCETRAÇÃO, EX:RESTAURANTES, LOJAS...)
   #UTILIZANDO TAMBÉM A CURVA DE LORENZ 
@@ -895,11 +852,9 @@ ggplot(lorenz_df, aes(x=p,y=L)) +
 #BANCO MUNDIAL
 #https://data.worldbank.org/indicator/SI.POV.GINI
 ```
-
-</details> 
-<details>
+</details>
+<details style="margin-left: 20px;">
 <summary>➗ 12. Gráfico Teórico: Equação de Heckman (Capital Humano)</summary>
-  
 ```r
 #equação de heckman é aquela equação que é o efeito do que que acontece com a produtividade quando se investe em educação básica, quanto mais cedo se investe no individuo maior a taxa de retorno
 
@@ -939,21 +894,11 @@ labs(x= "Idade", y="taxa de retorno",
 +theme_minimal() +
   theme_minimal(base_size=25)+
   theme(legend.title = element_blank())
-                              
-                              
-                              
-                              
-       
 ```
-
 </details>
-
-<details>
-<summary>📈13. Como prever a partir de pacote R a maior probabilidade da cor de alguém de acordo com seu nome </summary>
-  
+<details style="margin-left: 20px;">
+<summary>📈 13. Como prever a partir de pacote R a maior probabilidade da cor de alguém de acordo com seu nome</summary>
 ```r
---------
-
 install.packages("rethnicity") #Pacote identifica a raça/cor a partir do nome da pessoa, atraves da distribuição de probabilidade do nome da pessoa seguindo a lógica de registros que são acumulados e pega a probabilidade de estar contido
 
 library(rethnicity)
@@ -1001,21 +946,11 @@ predict_ethnicity(firstnames = "Reginaldo", lastnames = "Kawa")
 
 #artigo citado que é bom para usar de repertorio para ver qual seriam mais empregaveis quando se usa um nome mais recorrente de raça diferente 
 #https://www.nber.org/papers/w9873 (LINK DO ARTIGO)
-
-
-
-
-
-
-
 ```
-
 </details>
-<details>
+<details style="margin-left: 20px;">
 <summary>🗺️ 14. Geoprocessamento: Mapas Estaduais e Variação do Gini (geobr)</summary>
-
 ```r
-
 #carregar 
 if(!require("pacman")) install.packages("pacman")
 library(pacman)
@@ -1134,13 +1069,10 @@ ggplot(gini_mapa) +
   labs(title = "",subtitle = "", caption = "") + theme_void( base_size = 16)
 
 #dá pra fazer com todos os dfs
-
 ```
-
 </details>
-<details>
+<details style="margin-left: 20px;">
 <summary>📏 15. Distância Geográfica Computacional (geosphere)</summary>
-  
 ```r
 if(!require("pacman")) install.packages("pacman")
 library(pacman)
@@ -1154,12 +1086,9 @@ df$distancia_para_recife_kms <- distGeo(
   recife_cords
 ) / 1000
 ```
-
 </details>
-
-<details>
+<details style="margin-left: 20px;">
 <summary>🤖 16. Web Scraping Dinâmico: Lista de Presidentes do BCB (Wikipédia)</summary>
-
 ```r
 if(!require("pacman")) install.packages("pacman")
 library(pacman)
@@ -1265,13 +1194,10 @@ cat("\nArquivos salvos!")
 print(head(bc, 10))
 
 ggstatsplot::ggpiestats(data = bc, x = sexo, title = "Sexo dos Presidentes do BCB")
-
 ```
-
-</details> 
-<details>
-<summary>🎥 17. Dataviz Interativa: Gráficos Animados com gganimate (Parte 1)</summary> 
-  
+</details>
+<details style="margin-left: 20px;">
+<summary>🎥 17. Dataviz Interativa: Gráficos Animados com gganimate (Parte 1)</summary>
 ```r
 if(!require("pacman")) install.packages("pacman")
 library(pacman)
@@ -1383,15 +1309,11 @@ sp_pe_economist <-  sp_pe + theme_economist()  #para aparecer como se fosse do t
 #ou fazer do tipo wsj
 
 sp_pe_wsj <- sp_pe + scale_color_wsj() #para ficar com gif com tipo de wall street journal
-
 ```
-
 </details>
-<details>
+<details style="margin-left: 20px;">
 <summary>🌐 18. Análise de Redes: Mapeamento de Coautoria (Google Scholar)</summary>
-
 ```r
-  
 install.packages("scholar")  #salvando o pacote de R 
 library(scholar)  #esse comando chama o pacote para o ambiente do R , ajuda a automatizar os dados do perfil do google escola 
   
@@ -1460,17 +1382,11 @@ library(scholar)  #esse comando chama o pacote para o ambiente do R , ajuda a au
       plot.caption = element_text(size = 16),
       plot.title.position = "plot"
     )
-  
-  
 ```
-
 </details>
-
-<details>
+<details style="margin-left: 20px;">
 <summary>🧪 19. Estatística Paramétrica: Testando Pressupostos de Regressão Linear</summary>
-
 ```r
-
 #Aprender a testar os pressupostos do modelo de regressão 
 
 if(!require("pacman")) install.packages("pacman")
@@ -1537,13 +1453,10 @@ plot <- sjPlot:: plot_model(modelo1,show.intercept = T, ci.lvl = 0.95) +
 plot(plot)
 
 plot + geom_hline(yintercept = 0,linetype = "bold",color= "green",size=2,alpha=.5)
-
 ```
 </details>
-
-<details>
-<summary>🌍 20. Mapas de Padrão GloboNews: Índice V-Dem (Democracia Eleitoral)</summary>   
-
+<details style="margin-left: 20px;">
+<summary>🌍 20. Mapas de Padrão GloboNews: Índice V-Dem (Democracia Eleitoral)</summary>
 ```r
 library(vdemdata)
 library(dplyr)
@@ -1557,12 +1470,10 @@ library(ggpubr)
 # Uso de ISO3C keys para left_join espacial impecável.
 ```
 </details>
-
-<details>
+<details style="margin-left: 20px;">
 <summary>🔍 21. Forense Eleitoral e Auditoria: A Lei de Benford</summary>
-  
 ```r
-  # Forense Eleitoral
+# Forense Eleitoral
   # detecção estatistica de sistematica de irregularidades eleitorais,feitos pelo Klimack e o Turner
   # o que é visto é a taxa de comparecimento e os votantes
   # nao se deve ter nenhuma concentração de pontos no canto direito porque todos naquela zona "coincidentemente" votaram no mesmo cara, isso pode ser uma sinalização de que aquilo pode ser algo muito estranho ali
@@ -1742,14 +1653,10 @@ library(ggpubr)
   
   # Caso queira salvar o gráfico em alta resolução
  ggsave("fingerprint_candidato_1t.png", plot = grafico_fingerprint, width = 10, height = 7, dpi = 300) 
- 
 ```
-
 </details>
-
-<details>
-<summary> ➕ 22. Implementação do Método Rozenas </summary>
-
+<details style="margin-left: 20px;">
+<summary>➕ 22. Implementação do Método Rozenas</summary>
 ```r
 #Metodologia desenvolvida pelo Arthur Rozenas que é pouco conhecido mas é muito citado
  
@@ -1834,17 +1741,11 @@ library(ggpubr)
  #Esse processo todo pode mostrar algo que mostre algo porém ele ainda pode ser falho nao se usa aqui os numeros verdadeiros mas ele mostra um cenario bom de se visualizar nesse exemplo 
  
  #O ideal que se faça isso por sessão mas demora BASTANTE 
- 
-
 ```
-
 </details>
-
-<details>
-<summary>  23. Estimador de status quo </summary>
-  
+<details style="margin-left: 20px;">
+<summary>23. Estimador de status quo</summary>
 ```r
-   
 #utilizamos o começo de lei 
  if(!require("pacman")) install.packages("pacman")
  library("pacman")
@@ -1889,7 +1790,7 @@ library(ggpubr)
  
  #Limpando o titulo de nomes honrosos e obbtendo o  primeiro nome das ruas 
  
- Precisamos do primeiro nome limpo para que o algoritmo do genderBR acerte a previsão
+ # Precisamos do primeiro nome limpo para que o algoritmo do genderBR acerte a previsão
  titulos_remover <- "Dr |Doutor |Prof |Professor |Eng |Engenheiro |Gen |General |Dep |Deputado |Pres |Presidente |Des |Desembargador |Pe |Padre |Dom |Cap |Capitão |Sgto |Sargento "
  
  dados_genero <- dados_separados %>%
@@ -1934,9 +1835,13 @@ library(ggpubr)
    arrange(desc(prop_masculina))
  
  #aqui conseguimos ver atraves dos nomes das ruas que cada uma tem um nome que é de forma grande chamada por nome de um Homem
-
 ```
+</details>
+</details>
 ---
-
 <details>
 <summary><b>💼 Projetos</b></summary>
+<details style="margin-left: 20px;">
+<summary>📊 1. Estruturação, Automação e Dashboards de Pricing</summary>
+</details>
+</details>
