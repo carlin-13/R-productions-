@@ -10,7 +10,6 @@ E também meus projetos utilizando o Rstudio.
 <details>
 <summary><b>📜 Estudos</b></summary>
   
-</details>
 
 <details style="margin-left: 20px;">
 <summary>🔎 1. Buscas Bibliográficas e Nuvem de Palavras (SciELO/CAPES)</summary>
