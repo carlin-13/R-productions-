@@ -32,6 +32,7 @@ nome3 <-  get_gender(nome2)
 
 #se for procurar por nomes mais estranhos ele vai pela probabilidade como por exemplo 
 # COM "T" ELE DÁ A PROBABILIDADE E COM "F" ELE DÁ QUAL É O SEXO DE FATO 
+
   get_gender("João", prob = F)
   
   
